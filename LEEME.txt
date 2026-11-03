@@ -1,0 +1,16 @@
+MerPro - archivos para publicar en la web
+
+Contenido:
+  index.html  -> la aplicación completa (un solo archivo)
+
+Cómo publicarla (cualquiera de estas opciones, todas gratis):
+  1) Netlify Drop: entrá a app.netlify.com/drop y arrastrá esta carpeta descomprimida.
+  2) Cloudflare Pages: Workers y Pages > Crear > Pages > Subir activos, y subí la carpeta.
+  3) GitHub Pages: subí index.html a un repositorio y activá Settings > Pages.
+
+Notas:
+  - La app necesita HTTPS (todas las opciones de arriba lo dan solas).
+  - La primera vez que se abre pide conectar tu Apps Script; ahí ingresás tus claves de acceso (la URL ya viene cargada).
+  - Para que funcionen las Notas, publicá la versión nueva del Apps Script (apps_script_con_notas.txt).
+  - El archivo trae guardada la URL de tu Apps Script (no las claves de acceso). Quien abra la página la puede ver, así que
+    la protección real son las claves de acceso: no las compartas ni las escribas en el archivo.
