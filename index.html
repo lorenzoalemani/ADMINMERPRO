@@ -1594,6 +1594,10 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
  body[data-v=produccion] .fab,body[data-v=envios] .fab{display:flex!important}
  .fab-b{width:64px!important;height:64px!important;box-shadow:0 12px 28px -6px rgba(0,0,0,.55)!important;border:1px solid color-mix(in srgb,var(--accent) 60%,#fff)}
 }
+
+body.scroll-lock{position:fixed!important;left:0;right:0;width:100%;overflow:hidden!important}
+.mas-sh,.fab-m,.modal,.drawer{overscroll-behavior:contain}
+.mas-ov{touch-action:none}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -4549,12 +4553,13 @@ function chPng(id){
 Object.assign(A,{chPng:d=>chPng(d.id),chCsv:d=>chCsv(d.id)});
 
 /* ---- barra de acciones fija en celular ---- */
+const CASA='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.2L11.1 4.6a1.3 1.3 0 011.8 0L20 11.2V19a1.6 1.6 0 01-1.6 1.6H5.6A1.6 1.6 0 014 19z"/><path d="M9.5 20.6v-5.4a1 1 0 011-1h3a1 1 0 011 1v5.4"/></svg>';
 function barraMovil(){
   /* barra inferior (solo celular) + botón flotante "+" */
   let b=$('#abar');if(!b){b=document.createElement('div');b.id='abar';b.className='abar';document.body.append(b)}
   const ocu=OCULTAS[ROL]||[],dest=[['resumen','Inicio','resumen'],['produccion','Producción','produccion'],['envios','Envíos','envios']].filter(x=>!ocu.includes(x[0]));
   const bd={produccion:0,envios:0};state.ventas.forEach(v=>{const e=etapa(v);if(atrasada(v))bd.produccion++;if(e==='enviar')bd.envios++});
-  b.innerHTML=dest.map(x=>`<button class="${vista===x[0]?'on':''}" data-act="ir" data-v="${x[0]}" aria-label="${x[1]}">${NAV_ICON[x[2]]||''}<span>${x[1]}</span>${bd[x[0]]?`<i class="bd">${bd[x[0]]}</i>`:''}</button>`).join('')+`<button class="${['resumen','produccion','envios'].includes(vista)?'':'on'}" data-act="masAbrir" aria-label="Más"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5.5" cy="12" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="18.5" cy="12" r=".9"/></svg><span>Más</span></button>`;
+  b.innerHTML=dest.map(x=>`<button class="${vista===x[0]?'on':''}" data-act="ir" data-v="${x[0]}" aria-label="${x[1]}">${x[2]==='resumen'?CASA:(NAV_ICON[x[2]]||'')}<span>${x[1]}</span>${bd[x[0]]?`<i class="bd">${bd[x[0]]}</i>`:''}</button>`).join('')+`<button class="${['resumen','produccion','envios'].includes(vista)?'':'on'}" data-act="masAbrir" aria-label="Más"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5.5" cy="12" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="18.5" cy="12" r=".9"/></svg><span>Más</span></button>`;
   b.style.display=b.innerHTML?'':'none';document.body.classList.toggle('con-abar',!!b.innerHTML);
   let f=$('#fab');if(!f){f=document.createElement('div');f.id='fab';f.className='fab';document.body.append(f)}
   const FI={x:'<rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6"/>',v:'<path d="M3 12l9-9h8v8l-9 9-8-8z"/><circle cx="15.5" cy="8.5" r="1.2"/>',p:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>',c:'<path d="M5 8h14l-1 11H6L5 8z"/><path d="M9 8V6h6v2"/>',u:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/>',n:'<path d="M5 3h10l4 4v14H5z"/><path d="M14 3v5h5M8 13h8M8 17h5"/>'};
@@ -5816,6 +5821,22 @@ document.addEventListener('pointerdown',e=>{
   setInterval(revisar,5*60e3);
   revisar();
   if(!leer())marcar();
+})();
+
+/* Con un panel abierto (Más, Crear, ventanas), la pantalla de fondo no se mueve al hacer scroll */
+(function(){
+  let y=0,on=false;
+  const abierto=()=>matchMedia('(max-width:700px)').matches&&[...document.querySelectorAll('#mas.on, #fab.on, .back, .drawer-back')].some(e=>!e.hidden&&e.getClientRects().length);
+  function chequear(){
+    const a=abierto();
+    if(a&&!on){on=true;y=window.scrollY||document.documentElement.scrollTop||0;document.body.style.top=(-y)+'px';document.body.classList.add('scroll-lock')}
+    else if(!a&&on){on=false;document.body.classList.remove('scroll-lock');document.body.style.top='';window.scrollTo({top:y,behavior:'instant'})}
+  }
+  let raf=0;const sch=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;chequear()})};
+  new MutationObserver(sch).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
+  addEventListener('resize',sch);
+  /* en la sombra detrás del panel no se desliza nada */
+  document.addEventListener('touchmove',e=>{if(on&&e.target.closest&&e.target.closest('.mas-ov,.fab-m ~ *'))e.preventDefault()},{passive:false});
 })();
 /* ================= Arranque ================= */
 $('#btnMenu').onclick=()=>$('#sidebar').classList.toggle('open');
