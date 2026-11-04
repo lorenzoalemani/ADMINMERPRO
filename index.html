@@ -1637,11 +1637,25 @@ html.scroll-lock,html.scroll-lock body{overflow:hidden!important;overscroll-beha
  html,body{overscroll-behavior-x:none}
  .toolbar,.seg,.chips{-webkit-overflow-scrolling:touch}
 }
-#ptr{position:fixed;top:calc(env(safe-area-inset-top) + 64px);left:50%;transform:translate(-50%,0);width:38px;height:38px;border-radius:50%;background:var(--panel);border:1px solid var(--border);box-shadow:0 8px 22px rgba(0,0,0,.35);display:grid;place-items:center;color:var(--dim);z-index:70;opacity:0;pointer-events:none;transition:opacity .2s}
-#ptr svg{width:18px;height:18px}#ptr.ok{color:var(--accent);border-color:var(--accent)}
-#ptr.spin svg{animation:ptrSpin .8s linear infinite}@keyframes ptrSpin{to{transform:rotate(360deg)}}
+#ptr{--p:0;position:fixed;top:calc(env(safe-area-inset-top) + 64px);left:50%;transform:translate(-50%,0);width:42px;height:42px;border-radius:50%;background:var(--panel);border:1px solid var(--border);box-shadow:0 8px 22px rgba(0,0,0,.3);display:grid;place-items:center;z-index:70;opacity:0;pointer-events:none}
+#ptr svg{width:30px;height:30px;transform:rotate(-90deg)}#ptr .tr{fill:none;stroke:var(--border);stroke-width:3}
+#ptr .fg{fill:none;stroke:var(--accent);stroke-width:3;stroke-linecap:round;stroke-dasharray:88;stroke-dashoffset:calc(88 - 88*var(--p))}
+#ptr.spin svg{animation:ptrSpin .9s linear infinite}#ptr.spin .fg{stroke-dashoffset:55}@keyframes ptrSpin{to{transform:rotate(270deg)}}
+#ptr .ck{position:absolute;inset:0;display:grid;place-items:center;color:var(--accent);font-size:20px;opacity:0;transform:scale(.4);transition:.25s}
+#ptr.done .ck{opacity:1;transform:scale(1)}#ptr.done svg{opacity:0}
 @media(min-width:701px){#ptr{display:none}}
 @media(prefers-reduced-motion:reduce){#ptr.spin svg{animation:none}}
+/* éxito en el celular: la tarjeta se pinta de verde con tilde */
+.ok-flash{position:relative;transition:background .3s,border-color .3s;background:color-mix(in srgb,var(--good) 14%,var(--panel))!important;border-color:var(--good)!important}
+.ok-flash::after{content:"✓";position:absolute;right:12px;top:46px;width:24px;height:24px;border-radius:50%;background:var(--good);color:#fff;display:grid;place-items:center;font:700 14px/1 system-ui;animation:okpop .35s cubic-bezier(.3,1.6,.5,1) both;pointer-events:none}
+tr.ok-flash{box-shadow:inset 0 0 0 2px var(--good)}tr.ok-flash td{background:transparent!important}
+@keyframes okpop{from{transform:scale(0)}to{transform:scale(1)}}
+/* los demás éxitos (sin tarjeta): píldora chica */
+@media(max-width:700px){
+.noti.exito{padding:8px 14px;border:0;border-radius:99px;background:#11151c;color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.3);align-items:center;gap:8px;width:max-content;max-width:92%;position:fixed;left:0;right:0;margin:auto;bottom:calc(env(safe-area-inset-bottom) + 92px)}
+.noti.exito .noti-t,.noti.exito .noti-bar,.noti.exito .noti-x{display:none}
+.noti.exito .noti-m{color:#fff;font-size:13px;font-weight:600;line-height:1.3}.noti.exito .noti-ic{background:none;color:#4ade80;width:auto;height:auto;margin:0}
+.noti.exito .noti-b{flex:none}}
 
 .tip.touch{pointer-events:none;max-width:min(86vw,320px);font-size:13px;box-shadow:0 12px 30px rgba(0,0,0,.45);z-index:95}
 .tip .tip-h{margin-top:7px;padding-top:6px;border-top:1px solid var(--border);color:var(--dim);font-size:11.5px}
@@ -2023,6 +2037,13 @@ const btnCsv=()=>EXP?`<button class="btn ic-only" data-act="exportCsv" aria-labe
 const NOTI={exito:{t:'¡Listo!',d:4500,i:'✓'},info:{t:'Aviso',d:6000,i:'i'},aviso:{t:'Atención',d:9000,i:'!'},error:{t:'Ocurrió un error',d:14000,i:'×'},cargando:{t:'Un momento…',d:0,i:''}};
 function notiWrap(){let w=document.getElementById('notiWrap');if(!w){w=document.createElement('div');w.id='notiWrap';w.setAttribute('aria-live','polite');w.setAttribute('role','region');w.setAttribute('aria-label','Notificaciones');document.body.append(w)}return w}
 function notificar(o){
+  /* celular: un éxito sobre una tarjeta no abre cartel, la propia tarjeta se pinta de verde con un tilde */
+  if(o.tipo==='exito'&&!o.accion&&matchMedia('(max-width:700px)').matches&&window._ult&&Date.now()-window._ult.t<2500){
+    const u=window._ult;let h=u.el;if(!h||!h.isConnected)h=u.id?document.querySelector('[data-id="'+u.id+'"]'):null;
+    const host=h&&!h.closest('.back,.drawer,#mas,#fab')&&h.closest('.tcard,.card,.rs-acc,tr,li');
+    if(host){window._ult=null;host.classList.remove('ok-flash');void host.offsetWidth;host.classList.add('ok-flash');setTimeout(()=>host.classList.remove('ok-flash'),1700);
+      return{el:host,quitar(){},actualizar(){},terminar(){}}}
+  }
   const tipo=NOTI[o.tipo]?o.tipo:'info',cfg=NOTI[tipo],w=notiWrap(),msg=String(o.msg==null?'':o.msg),dur=o.dur!==undefined?o.dur:cfg.d;
   /* mismo aviso repetido: se reutiliza y suma un contador en vez de apilar copias */
   const dup=tipo!=='cargando'&&[...w.children].find(x=>x.dataset.k===tipo+'|'+msg);
@@ -2797,7 +2818,7 @@ function cerrarCapas(soloDrawers){$$('#layer .back').forEach(x=>{if(!soloDrawers
 document.addEventListener('click',e=>{
   const c=e.target.closest('[data-cerrar]');if(c){const b=c.closest('.back');if(b){b.remove();if(b.classList.contains('drawer-back'))panelFn=null}return}
   const a=e.target.closest('[data-act]');if(!a)return;
-  const f=A[a.dataset.act];if(f){e.stopPropagation();const mm=a.closest('.mas');if(mm&&a.dataset.act!=='masT')mm.classList.remove('open');f(a.dataset,a)}
+  const f=A[a.dataset.act];if(f){window._ult={el:a,id:a.dataset.id,t:Date.now()};e.stopPropagation();const mm=a.closest('.mas');if(mm&&a.dataset.act!=='masT')mm.classList.remove('open');f(a.dataset,a)}
 });
 document.addEventListener('change',e=>{const s=e.target.closest('[data-sel]');if(!s)return;const n=s.dataset.sel;
   if(n.startsWith('ord:')){const c=n.slice(4);if(!s.value)delete ui.sort[c];else{const[k,d]=s.value.split(':');ui.sort[c]={k,d}}render();return}
@@ -5921,14 +5942,16 @@ document.addEventListener('pointerdown',e=>{
   document.addEventListener('focusout',()=>{clearTimeout(kt);kt=setTimeout(()=>{if(!campo(document.activeElement))document.body.classList.remove('kb-open')},120)});
   /* 2) Deslizar hacia abajo desde arriba de todo actualiza los datos */
   let y0=0,dy=0,act=false,chip=null;
-  const mk=()=>{if(chip)return chip;chip=document.createElement('div');chip.id='ptr';chip.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>';document.body.append(chip);return chip};
+  const mk=()=>{if(chip)return chip;chip=document.createElement('div');chip.id='ptr';chip.innerHTML='<svg viewBox="0 0 36 36"><circle class="tr" cx="18" cy="18" r="14"/><circle class="fg" cx="18" cy="18" r="14"/></svg><b class="ck">✓</b>';document.body.append(chip);return chip};
+  const pr=(c,k)=>{c.style.setProperty('--p',k)};
   const libre=()=>!document.documentElement.classList.contains('scroll-lock')&&!document.querySelector('#mas.on,#fab.on,.back:not([hidden]),.drawer-back');
   document.addEventListener('touchstart',e=>{act=false;if(!ph()||(window.scrollY||0)>0||!libre()||e.touches.length!==1)return;if(e.target.closest&&e.target.closest('.seg,.toolbar,input,textarea,select,.tcard,svg'))return;y0=e.touches[0].clientY;dy=0;act=true},{passive:true});
   document.addEventListener('touchmove',e=>{if(!act)return;dy=e.touches[0].clientY-y0;if(dy<=0){const c=mk();c.style.opacity=0;return}
-    const c=mk(),k=Math.min(dy,110);c.style.opacity=Math.min(1,k/70);c.style.transform='translate(-50%,'+(k*.55)+'px) rotate('+(k*3)+'deg)';c.classList.toggle('ok',dy>=80)},{passive:true});
+    const c=mk(),k=Math.min(dy,110);c.classList.remove('spin','done');c.style.transition='opacity .2s';c.style.opacity=Math.min(1,k/50);c.style.transform='translate(-50%,'+(k*.55)+'px)';pr(c,Math.min(1,dy/80));c.classList.toggle('ok',dy>=80)},{passive:true});
+  const fin=c=>{c.style.transition='opacity .25s,transform .25s';c.classList.remove('spin','ok','done');c.style.opacity=0;c.style.transform='translate(-50%,0)'};
   document.addEventListener('touchend',()=>{if(!act)return;act=false;const c=chip;if(!c)return;
-    if(dy>=80&&typeof cargar==='function'&&ENDPOINT&&TOKEN){c.classList.add('spin');c.style.transform='translate(-50%,56px)';c.style.opacity=1;Promise.resolve(cargar(false)).finally(()=>setTimeout(()=>{c.classList.remove('spin','ok');c.style.opacity=0;c.style.transform='translate(-50%,0)'},500))}
-    else{c.style.opacity=0;c.style.transform='translate(-50%,0)'}},{passive:true});
+    if(dy>=80&&typeof cargar==='function'&&ENDPOINT&&TOKEN){c.style.transition='opacity .2s,transform .25s';c.classList.add('spin');c.style.transform='translate(-50%,56px)';c.style.opacity=1;Promise.resolve(cargar(false)).then(()=>{c.classList.remove('spin');c.classList.add('done')},()=>{}).finally(()=>setTimeout(()=>fin(c),650))}
+    else fin(c)},{passive:true});
 })();
 /* ================= Arranque ================= */
 $('#btnMenu').onclick=()=>$('#sidebar').classList.toggle('open');
