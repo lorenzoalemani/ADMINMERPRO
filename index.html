@@ -1696,12 +1696,12 @@ body table.cards tr.ph-pro[data-sw] td[data-l="Color"]{display:block!important;g
 .selall,.barra-lote{display:none!important}
 /* deslizar para marcar */
 #view table tbody tr[data-sw]{animation:none!important}
-table.cards tr[data-sw]{touch-action:pan-y;transform:translateX(var(--sx,0px));transition:transform .22s ease,box-shadow .22s;position:relative;box-shadow:-500px 0 0 0 var(--good)}
+table.cards tr[data-sw]{touch-action:pan-y;transform:translate3d(var(--sx,0px),0,0);will-change:transform;transition:transform .42s cubic-bezier(.2,.9,.25,1);position:relative;-webkit-tap-highlight-color:transparent}
 table.cards tr[data-sw].sw-drag{transition:none}
-table.cards tr[data-sw]::before{content:attr(data-swl);position:absolute;right:100%;top:0;bottom:0;width:170px;display:flex!important;align-items:center;justify-content:flex-end;padding-right:14px;white-space:nowrap;color:#fff;font:700 14px var(--sans);background:var(--good);box-shadow:none;opacity:0;transition:opacity .15s;pointer-events:none}
-table.cards tr[data-sw].sw-drag::before,table.cards tr[data-sw].sw-go::before{opacity:1}
-table.cards tr[data-sw]:not(.sw-drag):not(.sw-go){box-shadow:none}
-.tcard:has(tr[data-sw]){overflow:clip}
+table.cards tr[data-sw]::before{content:attr(data-swl);position:absolute;right:100%;top:0;bottom:0;width:250px;display:flex!important;align-items:center;justify-content:flex-end;padding-right:16px;white-space:nowrap;color:#fff;font:700 14px var(--sans);background:var(--good);opacity:0;transition:opacity .18s,background-color .2s,padding .2s;pointer-events:none;border-radius:0;will-change:opacity}
+table.cards tr[data-sw].sw-drag::before{opacity:.78}
+table.cards tr[data-sw].sw-drag.sw-go::before{opacity:1;background:color-mix(in srgb,var(--good) 82%,#000);padding-right:22px}
+table.cards tr[data-sw]:not(.sw-drag)::before{opacity:0;transition-delay:.12s}
 }
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
@@ -6021,15 +6021,26 @@ document.addEventListener('pointerdown',e=>{
 
 /* ===== Deslizar una fila hacia la derecha para marcarla (Envíos y Producción, celular) ===== */
 (function(){
-  const ph=()=>matchMedia('(max-width:700px)').matches;
-  let tr=null,x0=0,y0=0,dx=0,mode=0,block=0;
-  document.addEventListener('touchstart',e=>{tr=null;if(!ph()||e.touches.length!==1)return;const t=e.target.closest&&e.target.closest('tr[data-sw]');if(!t||e.target.closest('button,a,input,.eic'))return;const p=e.touches[0];if(p.clientX<24)return;tr=t;x0=p.clientX;y0=p.clientY;dx=0;mode=0},{passive:true});
+  const ph=()=>matchMedia('(max-width:700px)').matches,TH=96;
+  let tr=null,x0=0,y0=0,raw=0,mode=0,block=0,raf=0,go=false,t0=0,lx=0,lt=0,vx=0;
+  const rubber=r=>r<=TH?r:TH+(r-TH)*.38;
+  const paint=()=>{raf=0;if(!tr)return;const d=Math.min(rubber(raw),230);tr.style.setProperty('--sx',d.toFixed(1)+'px');
+    const g=raw>=TH;if(g!==go){go=g;tr.classList.toggle('sw-go',g);if(g&&navigator.vibrate)try{navigator.vibrate(8)}catch(e){}}};
+  const flip=(ids)=>{/* las filas que quedan suben suavemente a su nuevo lugar */
+    const rows=[...document.querySelectorAll('tbody tr[data-sw]')];
+    rows.forEach(r=>{const o=ids[r.dataset.id];if(o===undefined)return;const dy=o-r.getBoundingClientRect().top;if(Math.abs(dy)<2)return;
+      r.animate([{transform:`translate3d(0,${dy}px,0)`},{transform:'translate3d(0,0,0)'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)'})})};
+  document.addEventListener('touchstart',e=>{tr=null;if(!ph()||e.touches.length!==1)return;const t=e.target.closest&&e.target.closest('tr[data-sw]');if(!t||e.target.closest('button,a,input,.eic'))return;const p=e.touches[0];if(p.clientX<24)return;tr=t;x0=lx=p.clientX;y0=p.clientY;raw=0;mode=0;go=false;lt=performance.now();vx=0},{passive:true});
   document.addEventListener('touchmove',e=>{if(!tr)return;const p=e.touches[0],mx=p.clientX-x0,my=p.clientY-y0;
-    if(!mode){if(Math.abs(my)>10&&Math.abs(my)>Math.abs(mx)){tr=null;return}if(mx>12&&mx>Math.abs(my)*1.4){mode=1;tr.classList.add('sw-drag')}else return}
-    dx=Math.max(0,Math.min(mx,200));tr.style.setProperty('--sx',dx+'px');tr.classList.toggle('sw-go',dx>=95)},{passive:true});
-  const fin=()=>{if(!tr)return;const t=tr;tr=null;if(!mode)return;t.classList.remove('sw-drag');block=Date.now();
-    const go=dx>=95;t.style.setProperty('--sx','0px');setTimeout(()=>t.classList.remove('sw-go'),260);
-    if(go&&A.avanzar){const d=t.dataset;try{Promise.resolve(A.avanzar({id:d.id,e:d.e})).catch(()=>{})}catch(er){}}};
+    if(!mode){if(Math.abs(my)>9&&Math.abs(my)>Math.abs(mx)){tr=null;return}if(mx>10&&mx>Math.abs(my)*1.3){mode=1;tr.classList.add('sw-drag')}else return}
+    const n=performance.now();if(n>lt){vx=(p.clientX-lx)/(n-lt);lx=p.clientX;lt=n}
+    raw=Math.max(0,mx-10);if(!raf)raf=requestAnimationFrame(paint)},{passive:true});
+  const fin=()=>{if(!tr)return;const t=tr;tr=null;if(!mode)return;cancelAnimationFrame(raf);raf=0;block=Date.now();
+    const ok=raw>=TH||(raw>48&&vx>.9);t.classList.remove('sw-drag');t.style.setProperty('--sx','0px');
+    setTimeout(()=>t.classList.remove('sw-go'),300);
+    if(ok&&A.avanzar){const d=t.dataset,pos={};document.querySelectorAll('tbody tr[data-sw]').forEach(r=>pos[r.dataset.id]=r.getBoundingClientRect().top);
+      let p;try{p=Promise.resolve(A.avanzar({id:d.id,e:d.e}))}catch(er){p=Promise.resolve()}
+      p.catch(()=>{}).finally(()=>{requestAnimationFrame(()=>flip(pos))})}};
   document.addEventListener('touchend',fin,{passive:true});document.addEventListener('touchcancel',fin,{passive:true});
   document.addEventListener('click',e=>{if(Date.now()-block<450&&e.target.closest&&e.target.closest('tr[data-sw]')){e.stopPropagation();e.preventDefault()}},true);
 })();
