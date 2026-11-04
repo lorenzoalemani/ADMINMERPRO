@@ -1715,7 +1715,7 @@ button.eic.copiado{background:var(--good)!important;border-color:var(--good)!imp
 @keyframes swspin{to{transform:rotate(270deg)}}
 
 @media(max-width:700px){
-body table.cards tr.ph-env[data-sw]{padding:0!important;overflow:hidden}
+body table.cards tr.ph-env[data-sw]{padding:0!important}
 body table.cards tr.ph-env[data-sw] td.env-h{display:flex!important;justify-content:space-between;align-items:center;padding:7px 14px;color:var(--tt);font:800 12px var(--sans);letter-spacing:.4px;background:linear-gradient(90deg,var(--tc),color-mix(in srgb,var(--tc) 68%,#fff));width:auto}
 body table.cards tr.ph-env[data-sw] td.env-h::before{display:none}
 .eh-l{display:flex;align-items:center;gap:7px}.eh-l svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -1724,7 +1724,10 @@ body table.cards tr.ph-env[data-sw] td.main{padding:11px 100px 12px 14px!importa
 body table.cards tr.ph-env[data-sw] td.main .env-pg{display:block;margin-top:7px}
 body table.cards tr.ph-env[data-sw] .eics.s-ph{top:calc(50% + 17px)}
 .eic{aspect-ratio:1/1;flex:none;min-width:36px}
-}</style>
+}.sw-clone{position:fixed!important;z-index:60;pointer-events:none;margin:0!important;border-radius:0;overflow:clip;background:transparent!important;border:0!important}
+.sw-clone table{width:100%}
+.sw-clone tr{background:var(--panel)!important}
+</style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -2457,7 +2460,8 @@ VIEWS.envios=()=>{
     const icE=W()?`<button class="eic ${imp?'ok':'no'}" data-act="etiqueta" data-id="${v.id}" aria-label="${imp?'Etiqueta impresa':'Falta imprimir la etiqueta'}" title="${imp?'Etiqueta impresa':'Falta imprimir la etiqueta'}"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7a2 2 0 012-2h12a2 2 0 012 2v7h-2M7 14h10v7H7z"/></svg></button>`:`<span class="eic ${imp?'ok':'no'}"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7a2 2 0 012-2h12a2 2 0 012 2v7h-2M7 14h10v7H7z"/></svg></span>`;
     const icC=`<button class="eic" data-act="copiarEnvio" data-id="${v.id}" aria-label="Copiar mensaje del envío" title="Copiar mensaje del envío"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1"/></svg></button>`;
     const loc=[c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada';
-    return`<tr class="${s==='enviar'?'ph-env':''}" ${s==='enviar'?`data-sw="avanzar" data-e="enviar" data-id="${v.id}" data-swl="✓ Entregado"`:''}>${s==='enviar'?chkCelda('envios',v.id):''}${s==='enviar'?`<td class="env-h s-ph" style="--tc:${tColor(v.transportista).c};--tt:${tColor(v.transportista).t}"><span class="eh-l"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>${esc((v.transportista||'Sin transporte').toUpperCase())}</span><span class="eh-r">${nb} bulto${nb===1?'':'s'}</span></td>`:''}<td class="main"><b>${esc(nombreCli(v.clienteId))}</b><span class="sub s-full">${esc([c.direccion,c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada')}</span>${s==='enviar'?`<span class="sub s-ph">${esc(loc)}</span><span class="env-pg s-ph"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldado'}</span></span><span class="eics s-ph">${icE}${icC}</span>`:''}</td><td data-l="Productos">${s==='enviar'?(esParcial(v)||uMain(v,'enviar')<totMain(v)?itemsEtapa(v,'enviar'):esc(itemsTxt(v))):itemsEtapa(v,'entregada')}${progHtml(v,true)}</td><td data-l="Transporte">${esc(v.transportista||'—')}</td><td data-l="${s==='enviar'?'Etiqueta':'Entregado'}">${s==='enviar'?etq:fmtF(v.fechaEntrega)}</td><td data-l="Cobro"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldada'}</span></td><td data-l="">${s==='enviar'?`<div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="enviar" data-id="${v.id}">Marcar entregado</button>${menuMas([{act:'armarEnvio',id:v.id,t:'Mensaje / etiqueta'},{act:'verVenta',id:v.id,t:'Ver venta'}])}</div>`:`<button class="btn sm" data-act="verVenta" data-id="${v.id}">Ver</button>`}</td></tr>`};
+    const tapV=matchMedia('(max-width:700px)').matches;
+    return`<tr class="${s==='enviar'?'ph-env':''}${tapV?' click':''}" ${s==='enviar'?`data-sw="avanzar" data-e="enviar" data-id="${v.id}" data-swl="✓ Entregado"`:tapV?`data-id="${v.id}"`:''}${tapV?' data-act="verVenta"':''}>${s==='enviar'?chkCelda('envios',v.id):''}${s==='enviar'?`<td class="env-h s-ph" style="--tc:${tColor(v.transportista).c};--tt:${tColor(v.transportista).t}"><span class="eh-l"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>${esc((v.transportista||'Sin transporte').toUpperCase())}</span><span class="eh-r">${nb} bulto${nb===1?'':'s'}</span></td>`:''}<td class="main"><b>${esc(nombreCli(v.clienteId))}</b><span class="sub s-full">${esc([c.direccion,c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada')}</span>${s==='enviar'?`<span class="sub s-ph">${esc(loc)}</span><span class="env-pg s-ph"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldado'}</span></span><span class="eics s-ph">${icE}${icC}</span>`:''}</td><td data-l="Productos">${s==='enviar'?(esParcial(v)||uMain(v,'enviar')<totMain(v)?itemsEtapa(v,'enviar'):esc(itemsTxt(v))):itemsEtapa(v,'entregada')}${progHtml(v,true)}</td><td data-l="Transporte">${esc(v.transportista||'—')}</td><td data-l="${s==='enviar'?'Etiqueta':'Entregado'}">${s==='enviar'?etq:fmtF(v.fechaEntrega)}</td><td data-l="Cobro"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldada'}</span></td><td data-l="">${s==='enviar'?`<div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="enviar" data-id="${v.id}">Marcar entregado</button>${menuMas([{act:'armarEnvio',id:v.id,t:'Mensaje / etiqueta'},{act:'verVenta',id:v.id,t:'Ver venta'}])}</div>`:`<button class="btn sm" data-act="verVenta" data-id="${v.id}">Ver</button>`}</td></tr>`};
   return head('Enviar','Envíos','Pedidos listos para despachar y los ya entregados.',`<button class="btn" data-act="loteEtq">Etiquetas en lote</button><button class="btn primary" data-act="armarEnvio">Mensaje y etiqueta</button>`)+
   `<div class="toolbar">${buscador('envios','Buscar cliente, producto o transportista…')}${segHtml('envios',[['enviar','Para enviar',pend.length],['entregados','Entregados',ent.length]])}${ordSel(clv,COLS)}</div>
   ${s==='enviar'?barraLote('envios',arr,'enviar','Marcar entregado'):''}
@@ -6035,12 +6039,12 @@ document.addEventListener('pointerdown',e=>{
   document.addEventListener('focusin',e=>{if(ph()&&campo(e.target)){clearTimeout(kt);document.body.classList.add('kb-open')}});
   document.addEventListener('focusout',()=>{clearTimeout(kt);kt=setTimeout(()=>{if(!campo(document.activeElement))document.body.classList.remove('kb-open')},120)});
   /* 2) Deslizar hacia abajo desde arriba de todo actualiza los datos */
-  let y0=0,dy=0,act=false,chip=null;
+  let y0=0,x0p=0,dy=0,act=false,chip=null;
   const mk=()=>{if(chip)return chip;chip=document.createElement('div');chip.id='ptr';chip.innerHTML='<svg viewBox="0 0 36 36"><circle class="tr" cx="18" cy="18" r="14"/><circle class="fg" cx="18" cy="18" r="14"/></svg><b class="ck">✓</b>';document.body.append(chip);return chip};
   const pr=(c,k)=>{c.style.setProperty('--p',k)};
   const libre=()=>!document.documentElement.classList.contains('scroll-lock')&&!document.querySelector('#mas.on,#fab.on')&&![...document.querySelectorAll('.back,.drawer-back')].some(e=>!e.hidden&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden'&&e.getBoundingClientRect().width>0);
-  document.addEventListener('touchstart',e=>{act=false;if(!ph()||(window.scrollY||0)>0||!libre()||e.touches.length!==1)return;if(e.target.closest&&e.target.closest('.seg,.toolbar,input,textarea,select,svg,.dp-pop,.dp-sheet'))return;y0=e.touches[0].clientY;dy=0;act=true},{passive:true});
-  document.addEventListener('touchmove',e=>{if(!act)return;dy=e.touches[0].clientY-y0;if(dy<=0){const c=mk();c.style.opacity=0;return}
+  document.addEventListener('touchstart',e=>{act=false;if(!ph()||(window.scrollY||0)>0||!libre()||e.touches.length!==1)return;if(e.target.closest&&e.target.closest('.seg,.toolbar,input,textarea,select,svg,.dp-pop,.dp-sheet'))return;y0=e.touches[0].clientY;x0p=e.touches[0].clientX;dy=0;act=true},{passive:true});
+  document.addEventListener('touchmove',e=>{if(!act)return;const mx=Math.abs(e.touches[0].clientX-x0p);dy=e.touches[0].clientY-y0;if(mx>12&&mx>Math.abs(dy)*.7){act=false;if(chip){chip.style.opacity=0;chip.style.transform='translate(-50%,0)'}return}if(dy<=0){const c=mk();c.style.opacity=0;return}
     const c=mk(),k=Math.min(dy,110);c.classList.remove('spin','done');c.style.transition='opacity .2s';c.style.opacity=Math.min(1,k/50);c.style.transform='translate(-50%,'+(k*.55)+'px)';pr(c,Math.min(1,dy/80));c.classList.toggle('ok',dy>=80)},{passive:true});
   const fin=c=>{c.style.transition='opacity .25s,transform .25s';c.classList.remove('spin','ok','done');c.style.opacity=0;c.style.transform='translate(-50%,0)'};
   document.addEventListener('touchend',()=>{if(!act)return;act=false;const c=chip;if(!c)return;
@@ -6065,18 +6069,21 @@ document.addEventListener('pointerdown',e=>{
     const n=performance.now();if(n>lt){vx=(p.clientX-lx)/(n-lt);lx=p.clientX;lt=n}
     raw=Math.max(0,mx-10);if(!raf)raf=requestAnimationFrame(paint)},{passive:true});
   const fin=()=>{if(!tr)return;const t=tr;tr=null;if(!mode)return;cancelAnimationFrame(raf);raf=0;block=Date.now();
-    const ok=raw>=TH||(raw>48&&vx>.9);t.classList.remove('sw-drag');t.style.setProperty('--sx','0px');
-    setTimeout(()=>t.classList.remove('sw-go'),300);
-    if(ok&&A.avanzar){const d=t.dataset,pos={};document.querySelectorAll('tbody tr[data-sw]').forEach(r=>pos[r.dataset.id]=r.getBoundingClientRect().top);
-      const rc=t.getBoundingClientRect(),cb=(t.closest('.tcard')||t.parentElement).getBoundingClientRect(),ov=document.createElement('div');ov.className='sw-ov';ov.style.cssText=`left:${cb.left}px;top:${rc.top}px;width:${cb.width}px;height:${rc.height}px`;
-      ov.innerHTML='<div class="sw-rg"><svg viewBox="0 0 40 40"><circle class="tr" cx="20" cy="20" r="16"/><circle class="fg" cx="20" cy="20" r="16"/></svg><b>✓</b></div>';document.body.append(ov);requestAnimationFrame(()=>ov.classList.add('on'));
-      const modal=()=>[...document.querySelectorAll('.back')].some(e=>!e.hidden&&getComputedStyle(e).display!=='none'&&e.getBoundingClientRect().width>0);
-      const quitar=()=>{ov.classList.remove('on');setTimeout(()=>ov.remove(),260)};
-      setTimeout(()=>{let p;try{p=Promise.resolve(A.avanzar({id:d.id,e:d.e}))}catch(er){p=Promise.resolve()}
-        setTimeout(()=>{if(modal())quitar()},120);
-        p.catch(()=>{}).finally(()=>{if(!ov.isConnected)return;if(modal()){quitar();return}
-          if(t.isConnected){quitar();return}
-          ov.classList.add('ok');requestAnimationFrame(()=>flip(pos));setTimeout(quitar,520)})},420)}};
+    const ok=raw>=TH||(raw>48&&vx>.9),dx=Math.min(rubber(raw),230);
+    if(!ok||!A.avanzar){t.classList.remove('sw-drag');t.style.setProperty('--sx','0px');setTimeout(()=>t.classList.remove('sw-go'),300);return}
+    /* la fila sale hacia la derecha en una copia, mientras la lista se acomoda por debajo */
+    const d=t.dataset,pos={},rc=t.getBoundingClientRect(),cb=(t.closest('.tcard')||t.parentElement).getBoundingClientRect();
+    document.querySelectorAll('tbody tr[data-sw]').forEach(r=>pos[r.dataset.id]=r.getBoundingClientRect().top);
+    const w=document.createElement('div');w.className='tcard sw-clone';w.style.cssText=`left:${cb.left}px;top:${rc.top}px;width:${cb.width}px;height:${rc.height}px`;
+    const tb=document.createElement('table');tb.className='cards';const bd=document.createElement('tbody');const c=t.cloneNode(true);c.removeAttribute('data-act');c.classList.add('sw-drag');c.style.setProperty('--sx',dx+'px');
+    bd.append(c);tb.append(bd);w.append(tb);document.body.append(w);
+    t.classList.remove('sw-drag','sw-go');t.style.setProperty('--sx','0px');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{c.style.setProperty('transition','transform .36s cubic-bezier(.55,0,.85,.35)','important');c.style.setProperty('--sx',(cb.width+60)+'px');w.style.transition='opacity .2s ease-in .16s';w.style.opacity='0'}));
+    const modal=()=>[...document.querySelectorAll('.back')].some(e=>!e.hidden&&getComputedStyle(e).display!=='none'&&e.getBoundingClientRect().width>0);
+    let p;try{p=Promise.resolve(A.avanzar({id:d.id,e:d.e}))}catch(er){p=Promise.resolve()}
+    setTimeout(()=>{if(modal()){w.style.transition='opacity .15s';w.style.opacity='0';setTimeout(()=>w.remove(),180)}},110);
+    setTimeout(()=>w.remove(),460);
+    p.catch(()=>{}).finally(()=>{if(!t.isConnected&&!modal())requestAnimationFrame(()=>flip(pos))})};
   document.addEventListener('touchend',fin,{passive:true});document.addEventListener('touchcancel',fin,{passive:true});
   document.addEventListener('click',e=>{if(Date.now()-block<450&&e.target.closest&&e.target.closest('tr[data-sw]')){e.stopPropagation();e.preventDefault()}},true);
 })();
