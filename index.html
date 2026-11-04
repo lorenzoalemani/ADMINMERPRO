@@ -1713,7 +1713,18 @@ button.eic.copiado{background:var(--good)!important;border-color:var(--good)!imp
 .sw-rg b{position:absolute;inset:0;display:grid;place-items:center;color:var(--good);font-size:24px;opacity:0;transform:scale(.3);transition:transform .32s cubic-bezier(.3,1.6,.5,1),opacity .15s}
 .sw-ov.ok .sw-rg svg{animation:none;opacity:0;transition:opacity .15s}.sw-ov.ok .sw-rg b{opacity:1;transform:scale(1)}
 @keyframes swspin{to{transform:rotate(270deg)}}
-</style>
+
+@media(max-width:700px){
+body table.cards tr.ph-env[data-sw]{padding:0!important;overflow:hidden}
+body table.cards tr.ph-env[data-sw] td.env-h{display:flex!important;justify-content:space-between;align-items:center;padding:7px 14px;color:var(--tt);font:800 12px var(--sans);letter-spacing:.4px;background:linear-gradient(90deg,var(--tc),color-mix(in srgb,var(--tc) 68%,#fff));width:auto}
+body table.cards tr.ph-env[data-sw] td.env-h::before{display:none}
+.eh-l{display:flex;align-items:center;gap:7px}.eh-l svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.eh-r{font-weight:700;font-size:12px;letter-spacing:0;opacity:.95}
+body table.cards tr.ph-env[data-sw] td.main{padding:11px 100px 12px 14px!important}
+body table.cards tr.ph-env[data-sw] td.main .env-pg{display:block;margin-top:7px}
+body table.cards tr.ph-env[data-sw] .eics.s-ph{top:calc(50% + 17px)}
+.eic{aspect-ratio:1/1;flex:none;min-width:36px}
+}</style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -2427,6 +2438,12 @@ VIEWS.produccion=()=>{
   ${resumen}`;
 };
 
+/* color de cada empresa de transporte */
+function tColor(n){const x=String(n||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if(x.includes('credifin'))return{c:'#2f5bea',t:'#fff'};
+  if(x.includes('via cargo')||x.includes('viacargo'))return{c:'#16a34a',t:'#fff'};
+  if(x.includes('correo'))return{c:'#facc15',t:'#11151c'};
+  return{c:'#64748b',t:'#fff'}}
 VIEWS.envios=()=>{
   const q=norm(ui.q.envios),s=ui.f.envios||'enviar';
   const base=ventasOrd().filter(v=>!q||norm(nombreCli(v.clienteId)+' '+itemsTxt(v)+' '+(v.transportista||'')).includes(q));
@@ -2440,7 +2457,7 @@ VIEWS.envios=()=>{
     const icE=W()?`<button class="eic ${imp?'ok':'no'}" data-act="etiqueta" data-id="${v.id}" aria-label="${imp?'Etiqueta impresa':'Falta imprimir la etiqueta'}" title="${imp?'Etiqueta impresa':'Falta imprimir la etiqueta'}"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7a2 2 0 012-2h12a2 2 0 012 2v7h-2M7 14h10v7H7z"/></svg></button>`:`<span class="eic ${imp?'ok':'no'}"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7a2 2 0 012-2h12a2 2 0 012 2v7h-2M7 14h10v7H7z"/></svg></span>`;
     const icC=`<button class="eic" data-act="copiarEnvio" data-id="${v.id}" aria-label="Copiar mensaje del envío" title="Copiar mensaje del envío"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1"/></svg></button>`;
     const loc=[c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada';
-    return`<tr class="${s==='enviar'?'ph-env':''}" ${s==='enviar'?`data-sw="avanzar" data-e="enviar" data-id="${v.id}" data-swl="✓ Entregado"`:''}>${s==='enviar'?chkCelda('envios',v.id):''}<td class="main"><b>${esc(nombreCli(v.clienteId))}</b><span class="sub s-full">${esc([c.direccion,c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada')}</span>${s==='enviar'?`<span class="sub s-ph">${esc(loc)}</span><span class="sub s-ph"><b>${esc(v.transportista||'Sin transporte')}</b> · ${nb} bulto${nb===1?'':'s'}</span><span class="eics s-ph">${icE}${icC}</span>`:''}</td><td data-l="Productos">${s==='enviar'?(esParcial(v)||uMain(v,'enviar')<totMain(v)?itemsEtapa(v,'enviar'):esc(itemsTxt(v))):itemsEtapa(v,'entregada')}${progHtml(v,true)}</td><td data-l="Transporte">${esc(v.transportista||'—')}</td><td data-l="${s==='enviar'?'Etiqueta':'Entregado'}">${s==='enviar'?etq:fmtF(v.fechaEntrega)}</td><td data-l="Cobro"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldada'}</span></td><td data-l="">${s==='enviar'?`<div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="enviar" data-id="${v.id}">Marcar entregado</button>${menuMas([{act:'armarEnvio',id:v.id,t:'Mensaje / etiqueta'},{act:'verVenta',id:v.id,t:'Ver venta'}])}</div>`:`<button class="btn sm" data-act="verVenta" data-id="${v.id}">Ver</button>`}</td></tr>`};
+    return`<tr class="${s==='enviar'?'ph-env':''}" ${s==='enviar'?`data-sw="avanzar" data-e="enviar" data-id="${v.id}" data-swl="✓ Entregado"`:''}>${s==='enviar'?chkCelda('envios',v.id):''}${s==='enviar'?`<td class="env-h s-ph" style="--tc:${tColor(v.transportista).c};--tt:${tColor(v.transportista).t}"><span class="eh-l"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>${esc((v.transportista||'Sin transporte').toUpperCase())}</span><span class="eh-r">${nb} bulto${nb===1?'':'s'}</span></td>`:''}<td class="main"><b>${esc(nombreCli(v.clienteId))}</b><span class="sub s-full">${esc([c.direccion,c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada')}</span>${s==='enviar'?`<span class="sub s-ph">${esc(loc)}</span><span class="env-pg s-ph"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldado'}</span></span><span class="eics s-ph">${icE}${icC}</span>`:''}</td><td data-l="Productos">${s==='enviar'?(esParcial(v)||uMain(v,'enviar')<totMain(v)?itemsEtapa(v,'enviar'):esc(itemsTxt(v))):itemsEtapa(v,'entregada')}${progHtml(v,true)}</td><td data-l="Transporte">${esc(v.transportista||'—')}</td><td data-l="${s==='enviar'?'Etiqueta':'Entregado'}">${s==='enviar'?etq:fmtF(v.fechaEntrega)}</td><td data-l="Cobro"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldada'}</span></td><td data-l="">${s==='enviar'?`<div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="enviar" data-id="${v.id}">Marcar entregado</button>${menuMas([{act:'armarEnvio',id:v.id,t:'Mensaje / etiqueta'},{act:'verVenta',id:v.id,t:'Ver venta'}])}</div>`:`<button class="btn sm" data-act="verVenta" data-id="${v.id}">Ver</button>`}</td></tr>`};
   return head('Enviar','Envíos','Pedidos listos para despachar y los ya entregados.',`<button class="btn" data-act="loteEtq">Etiquetas en lote</button><button class="btn primary" data-act="armarEnvio">Mensaje y etiqueta</button>`)+
   `<div class="toolbar">${buscador('envios','Buscar cliente, producto o transportista…')}${segHtml('envios',[['enviar','Para enviar',pend.length],['entregados','Entregados',ent.length]])}${ordSel(clv,COLS)}</div>
   ${s==='enviar'?barraLote('envios',arr,'enviar','Marcar entregado'):''}
