@@ -1609,6 +1609,43 @@ html.scroll-lock,html.scroll-lock body{overflow:hidden!important;overscroll-beha
  .fab-m{box-shadow:0 -20px 50px rgba(0,0,0,.4),0 160px 0 var(--panel)!important}
 }
 @media(prefers-reduced-motion:reduce){#mas .mas-sh,#mas .mas-ov,#mas .mas-sh>*{transition:none!important}}
+
+/* ===== Optimización táctil y de uso en celular ===== */
+@media(max-width:700px){
+ /* zonas de toque cómodas (mínimo 40–44 px) */
+ #view .btn,#view .btn.sm,#view .btn.ghost.sm{min-height:40px}
+ #view td .btn.sm,#view .list-row .btn.sm,#view .fact-cell .btn.sm{min-height:40px;padding-left:14px;padding-right:14px}
+ #view .btn.ic-only,#view .mas>.btn,.gp-ctl .btn{min-width:40px;min-height:40px}
+ .sel-btn,.toolbar .sel-btn,.toolbar select.sel-fil{min-height:42px!important;height:42px!important}
+ #view .seg button,#view .seg.sm button,#view .card .seg.sm>button{min-height:40px}
+ .rango-pill .rg-mr button,.rango-pill .rg-pre button{min-height:38px}
+ input.rowchk,#view input[type=checkbox]{width:24px;height:24px}
+ td.chkc input.rowchk{position:relative}td.chkc input.rowchk::after{content:'';position:absolute;inset:-10px}
+ .rp-t,.rango-pill .rp-t,.lib-rg .rp-t{font-size:11.5px!important}
+ /* respuesta al toque */
+ .btn,.abar button,.mas-sh .mi,.fab-b,.fab-m button,.kpi,.tile,#view tr.click,.list-row,.sel-btn,.seg button,.av-i{transition:transform .12s ease,background-color .15s ease,opacity .15s ease}
+ .btn:active,.fab-m button:active,.mas-sh .mi:active,.sel-btn:active,.av-i:active{transform:scale(.97);opacity:.85}
+ .abar button:active{transform:scale(.92)}
+ .fab-b:active{transform:scale(.92)}
+ #view tr.click:active,.list-row:active{background:color-mix(in srgb,var(--text) 6%,transparent)}
+ /* teclado abierto */
+ body.kb-open .abar,body.kb-open .fab{display:none!important}
+ body.kb-open.con-abar{padding-bottom:16px!important}
+ /* texto largo no rompe tarjetas */
+ #view .main b,#view td.main,#view .t b{overflow-wrap:anywhere}
+ /* desplazamiento fluido y sin rebote lateral */
+ html,body{overscroll-behavior-x:none}
+ .toolbar,.seg,.chips{-webkit-overflow-scrolling:touch}
+}
+#ptr{position:fixed;top:calc(env(safe-area-inset-top) + 64px);left:50%;transform:translate(-50%,0);width:38px;height:38px;border-radius:50%;background:var(--panel);border:1px solid var(--border);box-shadow:0 8px 22px rgba(0,0,0,.35);display:grid;place-items:center;color:var(--dim);z-index:70;opacity:0;pointer-events:none;transition:opacity .2s}
+#ptr svg{width:18px;height:18px}#ptr.ok{color:var(--accent);border-color:var(--accent)}
+#ptr.spin svg{animation:ptrSpin .8s linear infinite}@keyframes ptrSpin{to{transform:rotate(360deg)}}
+@media(min-width:701px){#ptr{display:none}}
+@media(prefers-reduced-motion:reduce){#ptr.spin svg{animation:none}}
+
+.tip.touch{pointer-events:none;max-width:min(86vw,320px);font-size:13px;box-shadow:0 12px 30px rgba(0,0,0,.45);z-index:95}
+.tip .tip-h{margin-top:7px;padding-top:6px;border-top:1px solid var(--border);color:var(--dim);font-size:11.5px}
+@media(pointer:coarse){.svgw svg{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -2833,6 +2870,29 @@ function autoAvg(c){
   const m=v.reduce((a,y)=>a+y,0)/v.length;
   c.avgLine={v:m,label:'Promedio '+(c.fmt?c.fmt(Math.round(m)):compact(m))};
 }
+
+/* Gráficos en pantallas táctiles: tocar o arrastrar muestra el dato; tocar de nuevo el mismo punto abre el detalle */
+function tipTouch(el,svg,tip,html,x){
+  $$('body>.tip').forEach(t=>{if(t!==tip)t.remove()});if(tip.parentNode!==document.body)document.body.appendChild(tip);
+  tip._host=el;tip.innerHTML=html;tip.classList.add('on','touch');
+  const r=svg.getBoundingClientRect(),tw=tip.offsetWidth,th=tip.offsetHeight,vw=document.documentElement.clientWidth;
+  let l=Math.max(8,Math.min(vw-tw-8,x-tw/2)),t=r.top-th-6;if(t<64)t=Math.max(64,r.top+6);
+  tip.style.left=l+'px';tip.style.top=t+'px';
+}
+function tactil(el,svg,hit,tip,idx,info,mark,hint){
+  if(!matchMedia('(pointer:coarse)').matches)return;
+  let sel=-1,antes=-2,last=0,down=false;
+  hit.style.touchAction='pan-y';
+  const show=e=>{const i=idx(e);if(i===sel)return;sel=i;mark(i);tipTouch(el,svg,tip,info(i)+(hint?'<div class="tip-h">Tocá de nuevo para ver el detalle</div>':''),e.clientX)};
+  hit.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')return;last=Date.now();down=true;antes=sel;show(e)});
+  hit.addEventListener('pointermove',e=>{if(e.pointerType!=='touch'||!down)return;last=Date.now();show(e)});
+  hit.addEventListener('pointerup',e=>{if(e.pointerType==='touch'){down=false;last=Date.now()}});
+  hit.addEventListener('pointercancel',()=>{down=false});
+  svg.addEventListener('mousemove',e=>{if(Date.now()-last<900)e.stopPropagation()},true);
+  svg.addEventListener('mouseleave',e=>{if(Date.now()-last<900)e.stopPropagation()},true);
+  svg.addEventListener('click',e=>{if(Date.now()-last>900)return;if(antes!==sel||antes<0)e.stopPropagation()},true);
+}
+document.addEventListener('pointerdown',e=>{if(e.pointerType!=='touch')return;const t=document.querySelector('body>.tip.on.touch');if(t&&(!t._host||!t._host.isConnected||!t._host.contains(e.target)))t.classList.remove('on')},{passive:true,capture:true});
 function barChart(el,c){
   autoAvg(c);el._cfg=c;
   if(c.series&&c.series.length&&c.series.every(s=>(s.v||[]).every(x=>!x))){el.innerHTML=vacio('Todavía no hay datos','<span class="dim">No hay movimientos en este período.</span>');return}
@@ -2861,6 +2921,7 @@ function barChart(el,c){
   hit.addEventListener('mousemove',e=>{const i=idx(e);hl.setAttribute('x',pl+cw*i);hl.setAttribute('opacity','.06');hl.setAttribute('fill','currentColor');const r=el.getBoundingClientRect();
     ponerTip(el,tip,tipHtml(c.tips?c.tips[i]:c.labels[i],vis.map(s=>({n:s.n,c:s.c,v:s.v[i]||0})),c.stacked?tot[i]:null,c.fmt||money,c.tipExtra?c.tipExtra(i):''),e.clientX-r.left,e.clientY-r.top)});
   hit.addEventListener('mouseleave',()=>{hl.setAttribute('opacity','0');tip.classList.remove('on')});
+  tactil(el,svg,hit,tip,idx,i=>tipHtml(c.tips?c.tips[i]:c.labels[i],vis.map(s=>({n:s.n,c:s.c,v:s.v[i]||0})),c.stacked?tot[i]:null,c.fmt||money,c.tipExtra?c.tipExtra(i):''),i=>{hl.setAttribute('x',pl+cw*i);hl.setAttribute('opacity','.1');hl.setAttribute('fill','currentColor')},!!(c.drill||c.onClick));
   if(c.drill)hit.addEventListener('click',e=>{const i=idx(e),r=svg.getBoundingClientRect(),val=(pt+ih-(e.clientY-r.top))/ih*mx;let ser=null;if(c.stacked){let acc=0;for(const s of vis){const v=s.v[i]||0;if(v&&val>=acc&&val<acc+v){ser=s;break}acc+=v}}menuDrill(e.clientX,e.clientY,c.drill(c.keys[i],ser))});
   else if(c.onClick)hit.addEventListener('click',e=>c.onClick(c.keys[idx(e)]));
   el.onclick=e=>{const b=e.target.closest('[data-lg]');if(!b)return;const k=b.dataset.lg;hid.has(k)?hid.delete(k):hid.add(k);barChart(el,c)};
@@ -2891,6 +2952,7 @@ function lineChart(el,c){
   hit.addEventListener('mousemove',e=>{const r=svg.getBoundingClientRect();const i=n<2?0:Math.max(0,Math.min(n-1,Math.round((e.clientX-r.left-pl)/iw*(n-1))));cur.setAttribute('x1',X(i));cur.setAttribute('x2',X(i));cur.setAttribute('opacity','1');const r2=el.getBoundingClientRect();
     ponerTip(el,tip,tipHtml(c.tips?c.tips[i]:c.labels[i],vis.map(s=>({n:s.n,c:s.c,v:s.v[i]||0})),null,c.fmt||money),e.clientX-r2.left,e.clientY-r2.top)});
   hit.addEventListener('mouseleave',()=>{cur.setAttribute('opacity','0');tip.classList.remove('on')});
+  tactil(el,svg,hit,tip,e=>{const r=svg.getBoundingClientRect();return n<2?0:Math.max(0,Math.min(n-1,Math.round((e.clientX-r.left-pl)/iw*(n-1))))},i=>tipHtml(c.tips?c.tips[i]:c.labels[i],vis.map(s=>({n:s.n,c:s.c,v:s.v[i]||0})),null,c.fmt||money),i=>{cur.setAttribute('x1',X(i));cur.setAttribute('x2',X(i));cur.setAttribute('opacity','1');$$('.tdot',svg).forEach(d=>d.remove());vis.forEach(s=>{if(s.v[i]==null)return;const d=document.createElementNS('http://www.w3.org/2000/svg','circle');d.setAttribute('class','tdot');d.setAttribute('cx',X(i));d.setAttribute('cy',Y(s.v[i]||0));d.setAttribute('r','5');d.setAttribute('fill',s.c);d.setAttribute('stroke','var(--panel)');d.setAttribute('stroke-width','2');d.style.pointerEvents='none';svg.insertBefore(d,hit)})},!!c.drill);
   if(c.drill)hit.addEventListener('click',e=>{const r=svg.getBoundingClientRect(),i=n<2?0:Math.max(0,Math.min(n-1,Math.round((e.clientX-r.left-pl)/iw*(n-1)))),cy=e.clientY-r.top;let ser=null,best=1e9;if(vis.length>1)vis.forEach(s=>{const d=Math.abs(Y(s.v[i]||0)-cy);if(d<best){best=d;ser=s}});menuDrill(e.clientX,e.clientY,c.drill(c.keys[i],ser))});
   el.onclick=e=>{const b=e.target.closest('[data-lg]');if(!b)return;const k=b.dataset.lg;hid.has(k)?hid.delete(k):hid.add(k);lineChart(el,c)};
 }
@@ -5847,6 +5909,26 @@ document.addEventListener('pointerdown',e=>{
   addEventListener('resize',sch);
   /* en la sombra detrás del panel no se desliza nada */
   document.addEventListener('touchmove',e=>{if(on&&e.target.closest&&e.target.closest('.mas-ov'))e.preventDefault()},{passive:false});
+})();
+
+/* ===== Experiencia táctil ===== */
+(function(){
+  const ph=()=>matchMedia('(max-width:700px)').matches;
+  /* 1) Con el teclado abierto se esconden la barra inferior y el "+", para que no floten sobre el teclado */
+  const campo=e=>e&&e.matches&&e.matches('input:not([type=checkbox]):not([type=radio]):not([type=button]),textarea');
+  let kt=0;
+  document.addEventListener('focusin',e=>{if(ph()&&campo(e.target)){clearTimeout(kt);document.body.classList.add('kb-open')}});
+  document.addEventListener('focusout',()=>{clearTimeout(kt);kt=setTimeout(()=>{if(!campo(document.activeElement))document.body.classList.remove('kb-open')},120)});
+  /* 2) Deslizar hacia abajo desde arriba de todo actualiza los datos */
+  let y0=0,dy=0,act=false,chip=null;
+  const mk=()=>{if(chip)return chip;chip=document.createElement('div');chip.id='ptr';chip.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>';document.body.append(chip);return chip};
+  const libre=()=>!document.documentElement.classList.contains('scroll-lock')&&!document.querySelector('#mas.on,#fab.on,.back:not([hidden]),.drawer-back');
+  document.addEventListener('touchstart',e=>{act=false;if(!ph()||(window.scrollY||0)>0||!libre()||e.touches.length!==1)return;if(e.target.closest&&e.target.closest('.seg,.toolbar,input,textarea,select,.tcard,svg'))return;y0=e.touches[0].clientY;dy=0;act=true},{passive:true});
+  document.addEventListener('touchmove',e=>{if(!act)return;dy=e.touches[0].clientY-y0;if(dy<=0){const c=mk();c.style.opacity=0;return}
+    const c=mk(),k=Math.min(dy,110);c.style.opacity=Math.min(1,k/70);c.style.transform='translate(-50%,'+(k*.55)+'px) rotate('+(k*3)+'deg)';c.classList.toggle('ok',dy>=80)},{passive:true});
+  document.addEventListener('touchend',()=>{if(!act)return;act=false;const c=chip;if(!c)return;
+    if(dy>=80&&typeof cargar==='function'&&ENDPOINT&&TOKEN){c.classList.add('spin');c.style.transform='translate(-50%,56px)';c.style.opacity=1;Promise.resolve(cargar(false)).finally(()=>setTimeout(()=>{c.classList.remove('spin','ok');c.style.opacity=0;c.style.transform='translate(-50%,0)'},500))}
+    else{c.style.opacity=0;c.style.transform='translate(-50%,0)'}},{passive:true});
 })();
 /* ================= Arranque ================= */
 $('#btnMenu').onclick=()=>$('#sidebar').classList.toggle('open');
