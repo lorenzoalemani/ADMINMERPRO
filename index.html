@@ -1536,6 +1536,13 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
  table.saldos tr.cta-r>td[data-l="Gastos"]{order:5}
  table.saldos tr.cta-r>td[data-l="Desde"]{order:6;grid-column:1/-1;flex-direction:row;gap:8px!important;color:var(--dim);font-size:12px}
 }
+
+@media(max-width:700px){
+ .rango-pill .rg-ext{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;width:100%;max-height:0;opacity:0;padding:0 10px!important;overflow:hidden;white-space:normal;max-width:none;pointer-events:none;transition:max-height .45s cubic-bezier(.4,0,.2,1),opacity .3s ease,padding .45s cubic-bezier(.4,0,.2,1)}
+ .rango-pill.open .rg-ext{max-height:220px;opacity:1;padding:10px 10px 4px!important;pointer-events:auto}
+ .rango-pill .rg-ext>*{transform:none!important;transition:opacity .3s}
+ .rango-pill:not(.open) .rg-ext>*{opacity:0}
+}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -5561,7 +5568,7 @@ function segAnim(){
   document.querySelectorAll('#view .seg').forEach(seg=>{
     const on=seg.querySelector('button.on'),b0=seg.querySelector('button');
     if(!on||!seg.offsetWidth||seg.classList.contains('ai'))return;
-    const key=vista+'|'+(b0.dataset.k||'')+'|'+seg.children.length;
+    const key=vista+'|'+[...seg.querySelectorAll(':scope>button')].map(b=>b.textContent.trim()).join(',');
     const cs=getComputedStyle(on),ind=document.createElement('i');ind.className='seg-ind';
     ind.style.background=cs.backgroundColor!=='rgba(0, 0, 0, 0)'?cs.backgroundColor:'var(--accent)';
     ind.style.backgroundImage=cs.backgroundImage;ind.style.boxShadow=cs.boxShadow;ind.style.borderRadius=cs.borderRadius;
