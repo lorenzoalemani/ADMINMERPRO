@@ -1703,6 +1703,16 @@ table.cards tr[data-sw].sw-drag::before{opacity:.78}
 table.cards tr[data-sw].sw-drag.sw-go::before{opacity:1;background:color-mix(in srgb,var(--good) 82%,#000);padding-right:22px}
 table.cards tr[data-sw]:not(.sw-drag)::before{opacity:0;transition-delay:.12s}
 }
+
+button.eic.copiado{background:var(--good)!important;border-color:var(--good)!important;color:#fff!important;opacity:1!important;min-width:0!important;width:36px!important;padding:0!important}
+.sw-ov{position:fixed;z-index:60;display:grid;place-items:center;background:color-mix(in srgb,var(--panel) 90%,transparent);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;transition:opacity .2s;pointer-events:none}
+.sw-ov.on{opacity:1}
+.sw-rg{position:relative;width:44px;height:44px}
+.sw-rg svg{width:44px;height:44px;transform:rotate(-90deg);animation:swspin .8s linear infinite}
+.sw-rg circle{fill:none;stroke-width:3.5}.sw-rg .tr{stroke:color-mix(in srgb,var(--accent) 22%,transparent)}.sw-rg .fg{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:68}
+.sw-rg b{position:absolute;inset:0;display:grid;place-items:center;color:var(--good);font-size:24px;opacity:0;transform:scale(.3);transition:transform .32s cubic-bezier(.3,1.6,.5,1),opacity .15s}
+.sw-ov.ok .sw-rg svg{animation:none;opacity:0;transition:opacity .15s}.sw-ov.ok .sw-rg b{opacity:1;transform:scale(1)}
+@keyframes swspin{to{transform:rotate(270deg)}}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -4001,7 +4011,9 @@ function mensajeSaldos(){
   return`Cobrar Mati: ${money(f(mati))}\n\nCobrar Joa y Emi: ${money(f(joa))}\n\nDinero para Retirar: ${money(f(emi))}\n\nDinero en Efectivo: ${money(totalRetirado())}`;
 }
 function marcarCopiado(b){
-  if(!b||b._cp)return;b._cp=1;const h=b.innerHTML,w=b.offsetWidth;b.style.minWidth=w+'px';b.classList.add('copiado');
+  if(!b||b._cp)return;
+  if(b.classList.contains('eic')){b._cp=1;const h=b.innerHTML;b.classList.add('copiado');b.innerHTML='<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';setTimeout(()=>{b.innerHTML=h;b.classList.remove('copiado');b._cp=0},1600);return}
+  b._cp=1;const h=b.innerHTML,w=b.offsetWidth;b.style.minWidth=w+'px';b.classList.add('copiado');
   b.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-3px"><path d="M5 12l5 5 9-10"/></svg>Copiado';
   setTimeout(()=>{b.innerHTML=h;b.classList.remove('copiado');b.style.minWidth='';b._cp=0},2000);
 }
@@ -6039,8 +6051,15 @@ document.addEventListener('pointerdown',e=>{
     const ok=raw>=TH||(raw>48&&vx>.9);t.classList.remove('sw-drag');t.style.setProperty('--sx','0px');
     setTimeout(()=>t.classList.remove('sw-go'),300);
     if(ok&&A.avanzar){const d=t.dataset,pos={};document.querySelectorAll('tbody tr[data-sw]').forEach(r=>pos[r.dataset.id]=r.getBoundingClientRect().top);
-      let p;try{p=Promise.resolve(A.avanzar({id:d.id,e:d.e}))}catch(er){p=Promise.resolve()}
-      p.catch(()=>{}).finally(()=>{requestAnimationFrame(()=>flip(pos))})}};
+      const rc=t.getBoundingClientRect(),cb=(t.closest('.tcard')||t.parentElement).getBoundingClientRect(),ov=document.createElement('div');ov.className='sw-ov';ov.style.cssText=`left:${cb.left}px;top:${rc.top}px;width:${cb.width}px;height:${rc.height}px`;
+      ov.innerHTML='<div class="sw-rg"><svg viewBox="0 0 40 40"><circle class="tr" cx="20" cy="20" r="16"/><circle class="fg" cx="20" cy="20" r="16"/></svg><b>✓</b></div>';document.body.append(ov);requestAnimationFrame(()=>ov.classList.add('on'));
+      const modal=()=>[...document.querySelectorAll('.back')].some(e=>!e.hidden&&getComputedStyle(e).display!=='none'&&e.getBoundingClientRect().width>0);
+      const quitar=()=>{ov.classList.remove('on');setTimeout(()=>ov.remove(),260)};
+      setTimeout(()=>{let p;try{p=Promise.resolve(A.avanzar({id:d.id,e:d.e}))}catch(er){p=Promise.resolve()}
+        setTimeout(()=>{if(modal())quitar()},120);
+        p.catch(()=>{}).finally(()=>{if(!ov.isConnected)return;if(modal()){quitar();return}
+          if(t.isConnected){quitar();return}
+          ov.classList.add('ok');requestAnimationFrame(()=>flip(pos));setTimeout(quitar,520)})},420)}};
   document.addEventListener('touchend',fin,{passive:true});document.addEventListener('touchcancel',fin,{passive:true});
   document.addEventListener('click',e=>{if(Date.now()-block<450&&e.target.closest&&e.target.closest('tr[data-sw]')){e.stopPropagation();e.preventDefault()}},true);
 })();
