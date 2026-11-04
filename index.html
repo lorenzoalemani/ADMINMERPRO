@@ -3727,7 +3727,7 @@ async function copiarTexto(t){
 function abrirMensajeSaldos(){
   const t=mensajeSaldos();
   const el=modal({titulo:'Mensaje de saldos',ancho:460,body:`<p class="dim" style="margin:0 0 10px;font-size:13px">Listo para copiar y pegar en WhatsApp. Podés editarlo antes.</p><textarea id="msgSaldos" rows="8" style="width:100%;font:inherit;line-height:1.5">${esc(t)}</textarea>`,foot:`<button class="btn" data-cerrar>Cerrar</button><button class="btn primary" id="msgCopiar">Copiar mensaje</button>`});
-  copiarTexto(t).then(ok=>{if(ok)toast('Mensaje copiado al portapapeles.')});
+  copiarTexto(t);
   $('#msgCopiar',el).onclick=async()=>{const ok=await copiarTexto($('#msgSaldos',el).value);if(!ok)toast('No se pudo copiar: seleccioná el texto y copialo a mano.',true)};
 }
 function formRetiroEf(){
