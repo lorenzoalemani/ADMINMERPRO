@@ -1543,6 +1543,20 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
  .rango-pill .rg-ext>*{transform:none!important;transition:opacity .3s}
  .rango-pill:not(.open) .rg-ext>*{opacity:0}
 }
+
+@media(min-width:701px){
+ .toolbar:has(>.rango-pill.open)>.rango-pill{flex:1 1 100%;margin-left:0;width:100%;order:5}
+ .rango-pill.open .rg-ext{flex:1 1 auto;max-width:1100px;justify-content:flex-start;gap:12px}
+ .rango-pill.open .rg-ext .rg-pre{margin-left:6px}
+ .rango-pill.open .rg-mr{margin-left:auto;flex:none}
+ .rango-pill .rg-ext select{min-width:190px!important}
+}
+
+@media(min-width:701px) and (max-width:1240px){
+ .toolbar:has(>.rango-pill.open)>.rango-pill{border-radius:22px!important;flex-wrap:wrap!important;justify-content:flex-end}
+ .rango-pill.open .rg-mr{order:-1;margin:0 0 0 auto}
+ .rango-pill.open .rg-ext{order:2;flex:1 1 100%;max-width:none;flex-wrap:wrap;white-space:normal;padding:2px 12px 10px;overflow:visible}
+}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
