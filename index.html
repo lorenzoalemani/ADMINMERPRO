@@ -2514,7 +2514,7 @@ VIEWS.envios=()=>{
   expCsv('envios_'+s,[['Cliente',v=>nombreCli(v.clienteId)],['Dirección',v=>(CLI[v.clienteId]||{}).direccion||''],['Ciudad',v=>(CLI[v.clienteId]||{}).ciudad||''],['Provincia',v=>(CLI[v.clienteId]||{}).provincia||''],['Teléfono',v=>(CLI[v.clienteId]||{}).telefono||''],['Productos',v=>itemsTxt(v)],['Transporte',v=>v.transportista||''],['Etiqueta impresa',v=>v.etiquetaImpresa==='si'?'Sí':'No'],['Fecha entrega',v=>v.fechaEntrega||''],['Debe',v=>Math.max(0,debeDe(v))]],arr);
   const fila=v=>{const c=CLI[v.clienteId]||{},d=debeDe(v),imp=v.etiquetaImpresa==='si';
     const etq=W()?`<button class="pill ${imp?'ok':'warn'}" style="cursor:pointer" data-act="etiqueta" data-id="${v.id}">${imp?'Impresa':'Falta imprimir'}</button>`:`<span class="pill ${imp?'ok':'warn'}">${imp?'Impresa':'Falta imprimir'}</span>`;
-    const nb=bultosDeVenta(v)||1;
+    const nb=(s==='enviar'?bultosDeVenta(v):bultosEntregados(v))||1;
     const icE=W()?`<button class="eic ${imp?'ok':'no'}" data-act="etiqueta" data-id="${v.id}" aria-label="${imp?'Etiqueta impresa':'Falta imprimir la etiqueta'}" title="${imp?'Etiqueta impresa':'Falta imprimir la etiqueta'}"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7a2 2 0 012-2h12a2 2 0 012 2v7h-2M7 14h10v7H7z"/></svg></button>`:`<span class="eic ${imp?'ok':'no'}"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7a2 2 0 012-2h12a2 2 0 012 2v7h-2M7 14h10v7H7z"/></svg></span>`;
     const icC=`<button class="eic" data-act="copiarEnvio" data-id="${v.id}" aria-label="Copiar mensaje del envío" title="Copiar mensaje del envío"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1"/></svg></button>`;
     const loc=[c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada';
@@ -3763,6 +3763,9 @@ function pedidoResultado(el,res,r){
 const prodDe=id=>state.productos.find(p=>p.id===id);
 /* cantidad de un ítem que sale en este envío: lo embalado y sin entregar; si todavía no hay nada embalado, lo que falta entregar */
 function qEnvio(v,i){const hay=(v.items||[]).some(x=>qEt(v,x,'enviar')>0);return hay?qEt(v,i,'enviar'):Math.max(0,nI(i)-cnt(v,i).ent)}
+function bultosEntregados(v){/* unidades ya enviadas, sin contar accesorios (si solo hay accesorios, cuenta esos) */
+  const its=v.items||[],q=i=>cnt(v,i).ent,acc=i=>{const p=prodDe(i.productoId);return !p||p.esAccesorio};
+  const no=its.filter(i=>!acc(i)).reduce((s,i)=>s+q(i),0);return no>0?no:its.filter(acc).reduce((s,i)=>s+q(i),0)}
 function bultosDeVenta(v){
   const its=(v.items||[]).filter(i=>qEnvio(v,i)>0);
   const no=its.filter(i=>{const p=prodDe(i.productoId);return p&&!p.esAccesorio}).reduce((s,i)=>s+qEnvio(v,i),0);
