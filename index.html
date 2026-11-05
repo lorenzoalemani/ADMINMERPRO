@@ -4672,7 +4672,7 @@ const rePos=()=>{const y=window.scrollY;render();window.scrollTo(0,y)};
 document.addEventListener('change',e=>{const s=e.target.closest('[data-gmes]');if(!s)return;ui.gMes=s.value;ui.gSel='';syncPer('g');gRefresh();$$('[data-ch=gastoMes]').forEach(dibujar)});
 document.addEventListener('click',e=>{const p=e.target.closest('.gp-pie [data-g]');if(!p)return;A.gDrill({i:p.dataset.g})});
 /* ================= Mejoras UX: lote, deshacer, alertas, período global, exportar gráficos ================= */
-function deshacible(msg,fn){notificar({tipo:'exito',msg,dur:9000,accion:{txt:'Deshacer',fn}})}
+function deshacible(msg,fn){notificar({tipo:'exito',msg,dur:5000,accion:{txt:'Deshacer',fn}})}
 function restaurarVenta(snap){
   const cur=VEN[snap.id];if(!cur)return;
   aplicarStockVenta(cur,+1);
