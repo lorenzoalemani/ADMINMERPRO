@@ -1755,6 +1755,29 @@ body table.cards tr[data-sw][data-debe]:not([data-debe="0"])::after{color:#7a4a0
 .qty input{width:84px!important;text-align:center;border:0!important;background:transparent!important;box-shadow:none!important;font:800 38px var(--sans)!important;color:var(--text);padding:0!important;-moz-appearance:textfield}
 .qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .qty.pop input{animation:qpop .22s cubic-bezier(.3,1.6,.5,1)}@keyframes qpop{0%{transform:scale(.8)}100%{transform:none}}
+
+
+/* la cabecera y el botón de Producción solo existen en el celular */
+body table.cards tr.ph-pro td.pro-h,body table.cards tr.ph-pro td.pro-b{display:none}
+@media (max-width:700px){
+/* Producción: tarjeta con cabecera de color (igual que Envíos) */
+body table.cards tr.ph-pro[data-sw]{display:flex!important;flex-direction:column;gap:0;padding:0!important;background:var(--panel)!important}
+body table.cards tr.ph-pro[data-sw] td.pro-h{display:flex!important;order:0;justify-content:space-between;align-items:center;padding:7px 14px!important;color:var(--tt);font:800 12px var(--sans);letter-spacing:.4px;background:linear-gradient(90deg,var(--tc),color-mix(in srgb,var(--tc) 68%,#fff));align-self:stretch;width:100%;border-radius:0}
+body table.cards tr.ph-pro[data-sw] td.pro-h::before{display:none}
+.ph-dot{width:9px;height:9px;border-radius:50%;background:currentColor;display:inline-block;opacity:.9}
+body table.cards tr.ph-pro[data-sw] td.main{order:1;padding:11px 62px 0 14px!important;grid-area:auto}
+body table.cards tr.ph-pro[data-sw] td[data-l="Pedido"]{order:2;padding:3px 62px 0 14px!important;grid-area:auto}
+body table.cards tr.ph-pro[data-sw] td[data-l="Estado"]{order:3;padding:8px 14px 12px!important;grid-area:auto}
+body table.cards tr.ph-pro[data-sw] td[data-l="Color"]{display:none!important}
+body table.cards tr.ph-pro[data-sw] td.pro-b{display:block!important;position:static!important;z-index:auto!important;padding:0!important;order:4;height:0;opacity:1!important}
+body table.cards tr.ph-pro[data-sw] td.pro-b .eic{position:absolute;right:12px;top:calc(50% + 17px);transform:translateY(-50%);z-index:3}
+.eic-ok{color:var(--good)}
+}
+/* Notificación de la barra inferior: píldora con borde blanco */
+.abar .bd{left:calc(50% + 3px)!important;top:-3px!important;min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:#e5484d!important;color:#fff;font:800 10.5px/15px var(--sans)!important;border:2px solid var(--panel);box-sizing:border-box;display:block;text-align:center;box-shadow:0 2px 5px rgba(229,72,77,.35);pointer-events:none}
+.abar button.on .bd{border-color:color-mix(in srgb,var(--accent) 16%,var(--panel))}
+.abar .bd.bump{animation:bdbump .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bdbump{0%{transform:scale(1)}35%{transform:scale(1.35)}65%{transform:scale(.92)}100%{transform:scale(1)}}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -2440,6 +2463,8 @@ const PROD_PALETA=['#16a34a','#f2680d','#0ea5e9','#a855f7','#eab308','#ec4899','
 const colorProducto=n=>{if(!n)return null;let h=0;for(let i=0;i<n.length;i++)h=(h*31+n.charCodeAt(i))>>>0;return PROD_PALETA[h%PROD_PALETA.length]};
 const COLOR_HEX={negro:'#2b2b2b',gris:'#9ca3af',blanco:'#f1f1f1',rojo:'#dc2626',azul:'#2563eb',celeste:'#0ea5e9',verde:'#16a34a',amarillo:'#eab308',naranja:'#f2680d',marron:'#7c4a1e',beige:'#d9c5a0',dorado:'#c9a227',plateado:'#c0c0c0',violeta:'#8b5cf6',rosa:'#ec4899',bordo:'#7f1d2e'};
 function coloresHex(t){if(!t)return[];const n=norm(t),r=[];for(const k in COLOR_HEX){const x=n.indexOf(k);if(x>-1)r.push({x,h:COLOR_HEX[k]})}r.sort((a,b)=>a.x-b.x);const u=[...new Set(r.map(e=>e.h))];return u.length?u:['#6b7280']}
+function proHead(v,s){const i=itemPrincipal(v),t=i&&i.color?String(i.color).trim():'',h=coloresHex(t)[0]||'#6b7280',n=parseInt(h.slice(1),16),L=(.299*(n>>16)+.587*((n>>8)&255)+.114*(n&255))/255;
+  return`<td class="pro-h s-ph" style="--tc:${h};--tt:${L>.68?'#11151c':'#fff'}"><span class="eh-l"><i class="ph-dot"></i>${esc((t||'Sin color').toUpperCase())}</span><span class="eh-r">${uMain(v,s)} u.</span></td>`}
 const semanasEspera=v=>{if(!v.fecha)return 0;const d=Math.floor((new Date(hoy()+'T00:00:00')-new Date(v.fecha+'T00:00:00'))/864e5);return Math.max(0,Math.floor(d/7))};
 function estadoEspera(v){const w=semanasEspera(v);return w>=4?`<span class="pill bad" title="Hace ${w} semanas que está esperando">Hace ${w} sem</span>`:w===3?`<span class="pill warn" title="Lleva 3 semanas esperando: está por atrasarse">Hace 3 sem</span>`:w===2?`<span class="pill" title="Lleva 2 semanas esperando">Hace 2 sem</span>`:`<span class="pill ok" title="Menos de 2 semanas de espera">A tiempo</span>`}
 function itemPrincipal(v){const its=v.items||[];return its.find(i=>{const p=PRO[i.productoId];return p&&!p.esAccesorio})||its[0]||null}
@@ -2460,7 +2485,7 @@ VIEWS.produccion=()=>{
   base.forEach(v=>(v.items||[]).forEach(i=>{const n=nombreProd(i.productoId);if(!n)return;const c=i.color||'sin color',k=n+'||'+c,p=PRO[i.productoId],cant=qEt(v,i,s);if(cant<=0)return;(tot[k]=tot[k]||{n,c,q:0}).q+=cant;if(p&&p.esAccesorio)ac.a+=cant;else ac.p+=cant}));
   const lista=Object.values(tot).sort((x,y)=>y.q-x.q||x.n.localeCompare(y.n));
   const resumen=`<div class="tcard" style="margin-top:16px;padding:18px 20px"><h3 style="margin:0 0 4px;font-size:15px">${s==='embalar'?'Total a embalar':'Total a fabricar'}</h3><p class="dim" style="margin:0 0 12px;font-size:12.5px">Unidades pendientes de los pedidos de la lista, por producto y color.</p>${lista.length?`<ul class="res-list">${lista.map(x=>`<li><b>${x.q}</b> ${esc(x.n)} <span class="dim">— ${esc(x.c)}</span></li>`).join('')}</ul><p class="dim" style="margin:12px 0 0;font-size:13px">Total <b style="color:var(--text)">${ac.p}</b> producto${ac.p===1?'':'s'} y <b style="color:var(--text)">${ac.a}</b> accesorio${ac.a===1?'':'s'}</p>`:'<div class="dim">Nada para resumir.</div>'}</div>`;
-  const fila=v=>{const c=colorProducto(nomPrincipal(v));return`<tr class="click ph-pro ${c?'pcg':''}" data-act="verVenta" data-id="${v.id}" data-sw="avanzar" data-e="${s}" data-swl="✓ ${SIG_TXT[s]}" style="${c?`--pc:${c}`:''}">${chkCelda('produccion',v.id)}<td data-l="Fecha" class="nw">${fmtF(v.fecha)}</td><td data-l="Estado">${s==='fabricar'?estadoEspera(v):'<span class="pill ok">Fabricado</span>'}</td><td class="main"><b>${esc(nombreCli(v.clienteId))}</b></td><td data-l="Pedido"><div class="plist">${itemsEtapa(v,s)}</div>${progHtml(v,true)}</td><td data-l="Color">${puntosColor(v)}</td><td data-l="Notas" class="notas-c">${v.notas?esc(v.notas):'<span class="dim">—</span>'}</td>${s==='embalar'?`<td data-l="Debe" class="r nw">${debeDe(v)>0?`<b class="num">${money(debeDe(v))}</b>`:'<span class="pill ok">Saldada</span>'}</td>`:''}<td data-l=""><div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="${s}" data-id="${v.id}">${SIG_TXT[s]}</button>${menuMas([...(s==='embalar'&&debeDe(v)>0?[{act:'msgCobro',id:v.id,t:'Mensaje de cobro'}]:[]),{act:'verVenta',id:v.id,t:'Ver venta'}])}</div></td></tr>`};
+  const fila=v=>{const c=colorProducto(nomPrincipal(v));return`<tr class="click ph-pro ${c?'pcg':''}" data-act="verVenta" data-id="${v.id}" data-sw="avanzar" data-e="${s}" data-swl="✓ ${SIG_TXT[s]}" style="${c?`--pc:${c}`:''}">${chkCelda('produccion',v.id)}${proHead(v,s)}<td data-l="Fecha" class="nw">${fmtF(v.fecha)}</td><td data-l="Estado">${s==='fabricar'?estadoEspera(v):'<span class="pill ok">Fabricado</span>'}</td><td class="main"><b>${esc(nombreCli(v.clienteId))}</b></td><td class="pro-b s-ph"><button type="button" class="eic eic-ok" data-act="avanzar" data-e="${s}" data-id="${v.id}" aria-label="${SIG_TXT[s]}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button></td><td data-l="Pedido"><div class="plist">${itemsEtapa(v,s)}</div>${progHtml(v,true)}</td><td data-l="Color">${puntosColor(v)}</td><td data-l="Notas" class="notas-c">${v.notas?esc(v.notas):'<span class="dim">—</span>'}</td>${s==='embalar'?`<td data-l="Debe" class="r nw">${debeDe(v)>0?`<b class="num">${money(debeDe(v))}</b>`:'<span class="pill ok">Saldada</span>'}</td>`:''}<td data-l=""><div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="${s}" data-id="${v.id}">${SIG_TXT[s]}</button>${menuMas([...(s==='embalar'&&debeDe(v)>0?[{act:'msgCobro',id:v.id,t:'Mensaje de cobro'}]:[]),{act:'verVenta',id:v.id,t:'Ver venta'}])}</div></td></tr>`};
   return head('Producir','Producción','Pedidos ordenados del más antiguo al más nuevo. Avanzá cada uno cuando esté listo.')+
   `<div class="toolbar" data-tab="${s}">${buscador('produccion','Buscar cliente o producto…')}${segHtml('produccion',[['fabricar','Por fabricar',a.length],['embalar','Para embalar',b.length]])}${ordSel(clv,COLS)}</div>
   ${s==='fabricar'&&atras?`<div class="banner-falta" style="margin-bottom:12px"><span class="bf-ic">⚠</span><span><b>${atras}</b> pedido${atras===1?'':'s'} con 4 semanas o más de espera</span></div>`:''}
@@ -4779,7 +4804,8 @@ function barraMovil(){
   let b=$('#abar');if(!b){b=document.createElement('div');b.id='abar';b.className='abar';document.body.append(b)}
   const ocu=OCULTAS[ROL]||[],dest=barDest().map(i=>[i,BARN[i],i]).filter(x=>!ocu.includes(x[0]));
   const bd={produccion:0,envios:0,ventas:0,pagos:0,analitica:0};state.ventas.forEach(v=>{const e=etapa(v);if(atrasada(v))bd.produccion++;if(e==='enviar')bd.envios++});
-  b.innerHTML=dest.map(x=>`<button class="${vista===x[0]?'on':''}" data-act="ir" data-v="${x[0]}" aria-label="${x[1]}">${x[2]==='resumen'?CASA:(NAV_ICON[x[2]]||'')}<span>${x[1]}</span>${bd[x[0]]?`<i class="bd">${bd[x[0]]}</i>`:''}</button>`).join('')+`<button class="${barDest().includes(vista)?'':'on'}" data-act="masAbrir" aria-label="Más"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5.5" cy="12" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="18.5" cy="12" r=".9"/></svg><span>Más</span></button>`;
+  b.innerHTML=dest.map(x=>`<button class="${vista===x[0]?'on':''}" data-act="ir" data-v="${x[0]}" aria-label="${x[1]}">${x[2]==='resumen'?CASA:(NAV_ICON[x[2]]||'')}<span>${x[1]}</span>${bd[x[0]]?`<i class="bd${(window._bdPrev&&window._bdPrev[x[0]]!==undefined&&window._bdPrev[x[0]]!==bd[x[0]])?' bump':''}">${bd[x[0]]>99?'99+':bd[x[0]]}</i>`:''}</button>`).join('')+`<button class="${barDest().includes(vista)?'':'on'}" data-act="masAbrir" aria-label="Más"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5.5" cy="12" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="18.5" cy="12" r=".9"/></svg><span>Más</span></button>`;
+  window._bdPrev=Object.assign({},bd);
   b.style.display=b.innerHTML?'':'none';document.body.classList.toggle('con-abar',!!b.innerHTML);
   let f=$('#fab');if(!f){f=document.createElement('div');f.id='fab';f.className='fab';document.body.append(f)}
   const FI={x:'<rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6"/>',v:'<path d="M3 12l9-9h8v8l-9 9-8-8z"/><circle cx="15.5" cy="8.5" r="1.2"/>',p:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>',c:'<path d="M5 8h14l-1 11H6L5 8z"/><path d="M9 8V6h6v2"/>',u:'<circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/>',n:'<path d="M5 3h10l4 4v14H5z"/><path d="M14 3v5h5M8 13h8M8 17h5"/>'};
