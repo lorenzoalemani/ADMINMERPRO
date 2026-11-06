@@ -1802,13 +1802,23 @@ body table.cards tr.ph-pro[data-sw] td.pro-b .eic{position:absolute;right:12px;t
 }
 /* el encabezado de las tablas (Fecha, Cliente…) no sigue al bajar */
 #view table thead th,#view table thead{position:static!important;top:auto!important}
-/* botón de aviso por WhatsApp en la ficha de la venta */
-.wpp-av{display:flex;align-items:center;gap:12px;margin:14px 0 4px;padding:12px 14px;border-radius:16px;background:color-mix(in srgb,#25D366 14%,var(--panel));border:1px solid color-mix(in srgb,#25D366 45%,transparent);color:var(--text);text-decoration:none;-webkit-tap-highlight-color:transparent;transition:transform .12s,background-color .15s}
-.wpp-av>svg{flex:none;width:36px;height:36px;padding:8px;border-radius:50%;background:#25D366;color:#fff}
-.wpp-av span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.wpp-av b{font-size:14.5px}.wpp-av small{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wpp-av i{font-style:normal;font-size:22px;color:var(--dim)}
-.wpp-av:active{transform:scale(.98)}a.wpp-av:hover{background:color-mix(in srgb,#25D366 22%,var(--panel))}
-.wpp-av.off{background:var(--panel-2);border-color:var(--border)}.wpp-av.off>svg{background:var(--dim)}
+/* aviso por WhatsApp en la ficha de la venta */
+.wa-card{margin:14px 0 4px;border-radius:18px;border:1px solid color-mix(in srgb,#25D366 38%,var(--border));background:linear-gradient(180deg,color-mix(in srgb,#25D366 9%,var(--panel)),var(--panel));padding:14px;box-shadow:0 6px 18px -12px rgba(0,0,0,.35)}
+.wa-h{display:flex;align-items:center;gap:12px}
+.wa-ic{flex:none;width:38px;height:38px;border-radius:50%;background:#25D366;color:#fff;display:grid;place-items:center;box-shadow:0 4px 12px -4px rgba(37,211,102,.6)}.wa-ic svg{width:20px;height:20px}
+.wa-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.wa-t b{font-size:15px}.wa-t small{font-size:12.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wa-est{flex:none;font:700 11.5px var(--sans);padding:4px 9px;border-radius:99px;background:color-mix(in srgb,#25D366 18%,transparent);color:#178a45;white-space:nowrap}
+:root[data-theme="dark"] .wa-est{color:#5ee08f}
+.wa-est.pend,:root[data-theme="dark"] .wa-est.pend{background:var(--panel-2);color:var(--dim)}
+.wa-msg{margin:12px 0 0;padding:11px 13px;border-radius:14px 14px 14px 4px;background:color-mix(in srgb,#25D366 7%,var(--panel-2));border:1px solid var(--border);font-size:13.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text);max-height:168px;overflow:hidden;position:relative;cursor:text;-webkit-mask-image:linear-gradient(#000 78%,transparent);mask-image:linear-gradient(#000 78%,transparent)}
+.wa-ta{width:100%;margin-top:12px;font:inherit;font-size:14.5px;line-height:1.5;border-radius:14px;padding:11px 13px;resize:vertical}
+.wa-acts{display:flex;gap:8px;margin-top:12px}.wa-acts .btn{flex:1;justify-content:center;min-height:42px;gap:6px}
+.wa-acts .wa-send{flex:1.4;background:#25D366;border-color:#25D366;color:#fff;font-weight:700}.wa-acts .wa-send:hover{background:#1fbe5b}.wa-acts .wa-send svg{width:17px;height:17px}
+.wa-row{display:flex;align-items:center;gap:12px;margin:14px 0 4px;padding:10px 12px 10px 10px;border-radius:16px;border:1px solid color-mix(in srgb,#25D366 35%,var(--border));background:color-mix(in srgb,#25D366 7%,var(--panel));color:var(--text);text-decoration:none;-webkit-tap-highlight-color:transparent;transition:transform .12s,background-color .15s}
+.wa-row:hover{background:color-mix(in srgb,#25D366 13%,var(--panel))}.wa-row:active{transform:scale(.985)}
+.wa-row .wa-ic{width:34px;height:34px}.wa-row .wa-ic svg{width:18px;height:18px}
+.wa-go{flex:none;font:700 13px var(--sans);color:#fff;background:#25D366;padding:8px 14px;border-radius:99px}
+.wa-card.off{background:var(--panel-2);border-color:var(--border)}.wa-card.off .wa-ic{background:var(--dim);box-shadow:none}
 /* nota / aclaración de la venta, destacada */
 .nota-dest{display:block;margin:0;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,#f5a524 16%,var(--panel));border:1px solid color-mix(in srgb,#f5a524 50%,transparent);border-left:4px solid #f5a524;color:var(--text);font-size:14.5px;font-weight:600;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
 .nota-dest b{display:block;font:800 10.5px var(--sans);letter-spacing:.6px;text-transform:uppercase;color:#b7791f;margin-bottom:2px}
@@ -1818,6 +1828,14 @@ table.cards td.pro-nota{display:none}
 @media (max-width:700px){
  body table.cards tr.ph-pro[data-sw] td.pro-nota{display:block!important;order:3;padding:8px 62px 0 14px!important;grid-area:auto}
  body table.cards tr.ph-pro[data-sw] td[data-l="Estado"]{order:4}
+}
+button.wpp-av{width:100%;font:inherit;text-align:left;cursor:pointer}
+/* mensaje de cobro en el celular: hoja con botones grandes */
+@media (max-width:700px){
+ .mc textarea{font-size:15px;line-height:1.45;min-height:110px}
+ .mc-h{gap:10px}
+ .mc-b{display:flex}.mc-b .btn{flex:1;justify-content:center;min-height:44px}
+ .mc-b [data-mc-wa]{background:#25D366!important;border-color:#25D366!important;color:#fff!important}
 }
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
@@ -2622,6 +2640,7 @@ function ficha(id){
   const vs=ventasOrd().filter(v=>v.clienteId===id),ps=porFechaDesc(state.pagos).filter(p=>p.clienteId===id);
   modal({drawer:true,titulo:esc(nombreCli(id)),sub:esc([c.telefono,c.ciudad].filter(Boolean).join(' · ')||'Sin datos de contacto'),body:`
   <div class="mini"><div><span>Compró</span><b>${money(s.compro)}</b></div><div><span>Pagó</span><b>${money(s.pago)}</b></div><div><span>Debe</span><b style="${s.debe>0?'color:var(--bad)':''}">${money(s.debe)}</b></div></div>
+  ${waChat(id)}
   <div class="head-actions"><button class="btn primary mut" data-act="nuevaVenta" data-cli="${id}">${ICO.plus}Nueva venta</button><button class="btn mut" data-act="editCliente" data-id="${id}">Editar</button>${vs.length?'':`<button class="btn danger mut" data-act="delCliente" data-id="${id}">Eliminar</button>`}</div>${vs.length?`<p class="dim mut" style="margin:10px 0 0;font-size:12px">No se puede eliminar mientras tenga ventas asociadas (${vs.length}).</p>`:''}
   <div class="sec"><h4>Datos</h4><div class="kv">${[['Teléfono',c.telefono],['DNI',c.dni],['Email',c.email],['Código postal',c.codigoPostal]].map(([l,v])=>`<div><span>${l}</span>${esc(v||'—')}</div>`).join('')}<div class="w"><span>Dirección</span>${esc([c.direccion,c.ciudad,c.provincia].filter(Boolean).join(', ')||'—')}</div>${c.notas?`<div class="w"><span>Notas</span>${esc(c.notas)}</div>`:''}</div></div>
   <div class="sec"><h4>Ventas · ${vs.length}</h4>${vs.length?vs.map(v=>`<div class="list-row" style="cursor:pointer" data-act="verVenta" data-id="${v.id}"><div class="t"><b>${esc(itemsTxt(v))}</b><span>${fmtF(v.fecha)} · ${money(v.precioARS)}</span></div>${pillE(v)}</div>`).join(''):'<div class="dim">Todavía no compró.</div>'}</div>
@@ -2726,20 +2745,43 @@ function formVenta(id,cliId,itemsIni){
   $('[data-guardar]',el).onclick=()=>guardarVenta(false);
   const gp=$('[data-guardar-pago]',el);if(gp)gp.onclick=()=>guardarVenta(true);
 }
-/* aviso por WhatsApp cuando el pedido ya está fabricado y se está embalando */
-function mensajeEmbalado(v){
-  const c=CLI[v.clienteId]||{},nom=String(c.nombre||nombreCli(v.clienteId)||'').trim().split(/\s+/)[0]||'';
-  const q=uMain(v,'embalar'),parcial=totMain(v)>1&&q>0&&q<totMain(v);
-  const prod=parcial?itemsEtapaTxt(v,'embalar'):itemsTxt(v),d=debeDe(v);
-  return`¡Hola${nom?' '+nom:''}! Te escribimos de MerPro Equipamientos. Tu pedido (${prod}) ya está fabricado y lo estamos embalando para despacharlo${v.transportista?' por '+v.transportista:''}.`+
-    (d>0?` Te recordamos que queda un saldo de ${money(d)} para completar antes del envío.`:'')+` ¡Gracias por tu compra!`;
+/* avisos por WhatsApp según la etapa del pedido (por fabricar / para embalar) y chat directo */
+const AVISO_K='merpto_avisos_emb';
+const avisosEmb=()=>{try{return JSON.parse(localStorage.getItem(AVISO_K))||{}}catch(e){return{}}};
+const WA_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l2-5.5A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 9.5c.3 1.6 1.9 3.4 3.6 4.2l1.2-1.1 2 .9c-.2 1-1 1.6-2 1.6-3 0-6.2-3.2-6.2-6.2 0-1 .6-1.8 1.6-2l.9 2z"/></svg>';
+const primerNombre=id=>{const c=CLI[id]||{};return String(c.nombre||nombreCli(id)||'').trim().split(/\s+/)[0]||''};
+function mensajeEtapa(v,st){
+  const nom=primerNombre(v.clienteId),d=debeDe(v);
+  const q=uMain(v,st),parcial=totMain(v)>1&&q>0&&q<totMain(v);
+  const its=(v.items||[]).map(i=>({i,n:parcial?qEt(v,i,st):nI(i)})).filter(x=>x.n>0).map(x=>`• ${x.n} × ${nombreProd(x.i.productoId)}${x.i.color?' ('+x.i.color+')':''}`);
+  const saldo=d>0?[`💳 Saldo pendiente: *${money(d)}*${st==='embalar'?' (a abonar antes del despacho)':''}`]:[`✅ El pedido está abonado en su totalidad.`];
+  const cab=[`Hola${nom?' '+nom:''}, ¿cómo estás? 👋`,`Te escribimos de *MerPro Equipamientos*.`,''];
+  if(st==='fabricar')return[...cab,`Recibimos tu pedido y ya está *en fabricación*:`,...its,'',`⏱️ Te avisamos apenas esté listo para despachar${v.transportista?' por '+v.transportista:''}.`,...saldo,'',`Cualquier consulta, respondé este mensaje. ¡Gracias por elegirnos!`].join('\n');
+  return[...cab,`Tu pedido ya está *fabricado* y lo estamos embalando para despacharlo${parcial?' (esta entrega es parcial)':''}:`,...its,'',...(v.transportista?[`🚚 Envío: ${v.transportista}`]:[]),...saldo,'',`Te avisamos cuando salga. Cualquier consulta, respondé este mensaje. ¡Gracias por tu compra!`].join('\n');
+}
+const mensajeEmbalado=v=>mensajeEtapa(v,'embalar');
+const waPrev=t=>esc(t).replace(/\*([^*\n]+)\*/g,'<b>$1</b>');
+/* fila compacta: abre el chat del cliente con un saludo */
+function waChat(cliId){
+  const c=CLI[cliId]||{},tel=String(c.telefono||'').trim(),nom=primerNombre(cliId);
+  const u=linkWhatsApp(tel,`Hola${nom?' '+nom:''}, ¿cómo estás? Te escribimos de MerPro Equipamientos.`);if(!u)return'';
+  return`<a class="wa-row" href="${u}" target="_blank" rel="noopener" data-stop><span class="wa-ic">${WA_IC}</span><span class="wa-t"><b>WhatsApp</b><small>${esc(tel)}</small></span><span class="wa-go">Abrir chat</span></a>`;
 }
 function avisoWpp(v){
-  if(esCancelada(v)||!(etapa(v)==='embalar'||uMain(v,'embalar')>0))return'';
-  const c=CLI[v.clienteId]||{},url=linkWhatsApp(c.telefono,mensajeEmbalado(v));
-  const ic='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l2-5.5A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 9.5c.3 1.6 1.9 3.4 3.6 4.2l1.2-1.1 2 .9c-.2 1-1 1.6-2 1.6-3 0-6.2-3.2-6.2-6.2 0-1 .6-1.8 1.6-2l.9 2z"/></svg>';
-  if(!url)return`<div class="wpp-av off">${ic}<span><b>Avisar por WhatsApp</b><small>${c.telefono?'El teléfono del cliente no tiene un formato válido.':'El cliente no tiene teléfono cargado.'}</small></span>${W()?`<button type="button" class="btn sm" data-act="editCliente" data-id="${v.clienteId}">Cargar</button>`:''}</div>`;
-  return`<a class="wpp-av" href="${url}" target="_blank" rel="noopener" data-stop>${ic}<span><b>Avisar por WhatsApp</b><small>"Tu pedido ya está fabricado y lo estamos embalando…"</small></span><i aria-hidden="true">›</i></a>`;
+  if(esCancelada(v))return'';
+  const st=uMain(v,'embalar')>0||etapa(v)==='embalar'?'embalar':etapa(v)==='fabricar'?'fabricar':'';
+  if(!st)return waChat(v.clienteId);
+  const c=CLI[v.clienteId]||{},tel=String(c.telefono||'').trim(),ok=!!linkWhatsApp(tel),av=avisosEmb()[v.id+':'+st]||(st==='embalar'?avisosEmb()[v.id]:'');
+  const est=av?`<span class="wa-est">✓ Avisado ${fmtF(av.slice(0,10))} ${av.slice(11,16)}</span>`:`<span class="wa-est pend">Sin avisar</span>`;
+  const tit=st==='fabricar'?'Aviso: en fabricación':'Aviso: ya fabricado';
+  if(!ok)return`<div class="wa-card off"><div class="wa-h"><span class="wa-ic">${WA_IC}</span><span class="wa-t"><b>${tit}</b><small>${tel?'El teléfono cargado no es válido para WhatsApp':'El cliente no tiene teléfono cargado'}</small></span></div>${W()?`<div class="wa-acts"><button type="button" class="btn" data-act="editCliente" data-id="${v.clienteId}">Cargar teléfono</button></div>`:''}</div>`;
+  const m=mensajeEtapa(v,st);
+  return`<div class="wa-card" data-wa="${v.id}" data-st="${st}">
+    <div class="wa-h"><span class="wa-ic">${WA_IC}</span><span class="wa-t"><b>${tit}</b><small>WhatsApp · ${esc(tel)}</small></span>${est}</div>
+    <div class="wa-msg" data-act="waEditar" data-id="${v.id}" title="Tocá para editar el mensaje">${waPrev(m)}</div>
+    <textarea class="wa-ta" hidden rows="9" data-wa-ta="${v.id}">${esc(m)}</textarea>
+    <div class="wa-acts"><button type="button" class="btn" data-act="waCopiar" data-id="${v.id}">${IC_COPY}Copiar</button><button type="button" class="btn" data-act="waEditar" data-id="${v.id}">Editar</button><button type="button" class="btn wa-send" data-act="waEnviar" data-id="${v.id}">${WA_IC}Enviar</button></div>
+  </div>`;
 }
 function ventaPanel(id){
   const v=VEN[id];if(!v)return;panelFn=()=>ventaPanel(id);
@@ -6234,6 +6276,18 @@ document.addEventListener('pointerdown',e=>{
   const sobra=tb.getBoundingClientRect().width>c.clientWidth+2;c.classList.toggle('tc-scroll',sobra)})};
  const pedir=()=>{if(!t)t=requestAnimationFrame(medir)};
  const v=document.getElementById('view');if(v)new MutationObserver(pedir).observe(v,{childList:true});window.addEventListener('resize',pedir);pedir()})();
+
+
+/* aviso de embalado por WhatsApp (ficha de la venta) */
+Object.assign(A,{
+  waEditar:d=>{const c=document.querySelector('.wa-card[data-wa="'+d.id+'"]');if(!c)return;const m=c.querySelector('.wa-msg'),t=c.querySelector('.wa-ta'),b=c.querySelector('[data-act="waEditar"].btn');
+    if(t.hidden){t.hidden=false;m.hidden=true;if(b)b.textContent='Listo';t.style.height=Math.min(320,t.scrollHeight+4)+'px';t.focus()}else{m.innerHTML=waPrev(t.value);t.hidden=true;m.hidden=false;if(b)b.textContent='Editar'}},
+  waCopiar:async(d,el)=>{const t=document.querySelector('[data-wa-ta="'+d.id+'"]');const ok=await copiarTexto(t?t.value:mensajeEmbalado(VEN[d.id]));window._ult=null;if(ok&&el)marcarCopiado(el);else if(!ok)toast('No se pudo copiar: seleccionalo y copialo a mano.',true)},
+  waEnviar:d=>{const v=VEN[d.id];if(!v)return;const t=document.querySelector('[data-wa-ta="'+d.id+'"]');const u=linkWhatsApp((CLI[v.clienteId]||{}).telefono,t?t.value:mensajeEtapa(v,'embalar'));if(!u)return;
+    window.open(u,'_blank','noopener');
+    try{const a=avisosEmb(),n=new Date(),p=x=>String(x).padStart(2,'0');const cd=document.querySelector('.wa-card[data-wa="'+d.id+'"]'),st=(cd&&cd.dataset.st)||'embalar';a[v.id+':'+st]=`${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}T${p(n.getHours())}:${p(n.getMinutes())}`;localStorage.setItem(AVISO_K,JSON.stringify(a))}catch(e){}
+    const c=document.querySelector('.wa-card[data-wa="'+d.id+'"] .wa-est');if(c){const cd2=c.closest('.wa-card'),a=avisosEmb()[v.id+':'+((cd2&&cd2.dataset.st)||'embalar')]||'';c.className='wa-est';c.textContent='✓ Avisado '+fmtF(a.slice(0,10))+' '+a.slice(11,16)}}
+});
 /* ================= Arranque ================= */
 $('#btnMenu').onclick=()=>$('#sidebar').classList.toggle('open');
 $('#btnSearch').onclick=()=>A.buscar();
