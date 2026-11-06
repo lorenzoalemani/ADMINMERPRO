@@ -1840,6 +1840,10 @@ button.wpp-av{width:100%;font:inherit;text-align:left;cursor:pointer}
 .mc textarea{min-height:230px;line-height:1.5;font-size:14px}
 @media (max-width:700px){.mc textarea{min-height:260px}}
 .mc-b [data-mc-wa]{background:#25D366!important;border-color:#25D366!important;color:#fff!important}.mc-b [data-mc-wa]:hover{background:#1fbe5b!important}
+/* WhatsApp del mensaje de envío */
+.eic.eic-wa{background:#25D366;border-color:#25D366;color:#fff}.eic.eic-wa svg{width:18px;height:18px}
+.btn.wa-send-b{background:#25D366;border-color:#25D366;color:#fff}.btn.wa-send-b:hover{background:#1fbe5b}
+@media (max-width:700px){body table.cards tr.ph-env[data-sw] td.main{padding-right:150px!important}}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -2575,8 +2579,9 @@ VIEWS.envios=()=>{
     const icE=W()?`<button class="eic ${imp?'ok':'no'}" data-act="etiqueta" data-id="${v.id}" aria-label="${imp?'Etiqueta impresa':'Falta imprimir la etiqueta'}" title="${imp?'Etiqueta impresa':'Falta imprimir la etiqueta'}"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7a2 2 0 012-2h12a2 2 0 012 2v7h-2M7 14h10v7H7z"/></svg></button>`:`<span class="eic ${imp?'ok':'no'}"><svg viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7a2 2 0 012-2h12a2 2 0 012 2v7h-2M7 14h10v7H7z"/></svg></span>`;
     const icC=`<button class="eic" data-act="copiarEnvio" data-id="${v.id}" aria-label="Copiar mensaje del envío" title="Copiar mensaje del envío"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1"/></svg></button>`;
     const loc=[c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada';
+    const icW=`<button class="eic eic-wa" data-act="wppEnvio" data-id="${v.id}" aria-label="Enviar mensaje del envío por WhatsApp" title="Enviar mensaje del envío por WhatsApp">${WA_IC}</button>`;
     const tapV=matchMedia('(max-width:700px)').matches;
-    return`<tr class="${s==='enviar'?'ph-env':'ph-env ph-ent'}${tapV?' click':''}" ${s==='enviar'?`data-sw="avanzar" data-e="enviar" data-id="${v.id}" data-debe="${debeDe(v)}" data-swl="${debeDe(v)>0?'⚠ Con saldo':'✓ Entregado'}"`:tapV?`data-id="${v.id}"`:''}${tapV?' data-act="verVenta"':''}>${s==='enviar'?chkCelda('envios',v.id):''}${true?`<td class="env-h s-ph" style="--tc:${tColor(v.transportista).c};--tt:${tColor(v.transportista).t}"><span class="eh-l"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>${esc((v.transportista||'Sin transporte').toUpperCase())}</span><span class="eh-r">${nb} bulto${nb===1?'':'s'}</span></td>`:''}<td class="main"><b>${esc(nombreCli(v.clienteId))}</b><span class="sub s-full">${esc([c.direccion,c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada')}</span>${s==='enviar'?`<span class="sub s-ph">${esc(loc)}</span><span class="env-pg s-ph"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldado'}</span></span><span class="eics s-ph">${icE}${icC}</span>`:`<span class="sub s-ph">${esc(loc)}</span><span class="env-pg s-ph"><span class="pill ok">✓ Enviado${v.fechaEntrega?' '+fmtF(v.fechaEntrega):''}</span> <span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldado'}</span></span><span class="eics s-ph">${icE}${icC}</span>`}</td><td data-l="Productos">${s==='enviar'?(esParcial(v)||uMain(v,'enviar')<totMain(v)?itemsEtapa(v,'enviar'):esc(itemsTxt(v))):itemsEtapa(v,'entregada')}${progHtml(v,true)}</td><td data-l="Transporte">${esc(v.transportista||'—')}</td><td data-l="${s==='enviar'?'Etiqueta':'Entregado'}">${s==='enviar'?etq:fmtF(v.fechaEntrega)}</td><td data-l="Cobro"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldada'}</span></td><td data-l="">${s==='enviar'?`<div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="enviar" data-id="${v.id}">Marcar entregado</button>${menuMas([{act:'armarEnvio',id:v.id,t:'Mensaje / etiqueta'},{act:'verVenta',id:v.id,t:'Ver venta'}])}</div>`:`<button class="btn sm" data-act="verVenta" data-id="${v.id}">Ver</button>`}</td></tr>`};
+    return`<tr class="${s==='enviar'?'ph-env':'ph-env ph-ent'}${tapV?' click':''}" ${s==='enviar'?`data-sw="avanzar" data-e="enviar" data-id="${v.id}" data-debe="${debeDe(v)}" data-swl="${debeDe(v)>0?'⚠ Con saldo':'✓ Entregado'}"`:tapV?`data-id="${v.id}"`:''}${tapV?' data-act="verVenta"':''}>${s==='enviar'?chkCelda('envios',v.id):''}${true?`<td class="env-h s-ph" style="--tc:${tColor(v.transportista).c};--tt:${tColor(v.transportista).t}"><span class="eh-l"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>${esc((v.transportista||'Sin transporte').toUpperCase())}</span><span class="eh-r">${nb} bulto${nb===1?'':'s'}</span></td>`:''}<td class="main"><b>${esc(nombreCli(v.clienteId))}</b><span class="sub s-full">${esc([c.direccion,c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada')}</span>${s==='enviar'?`<span class="sub s-ph">${esc(loc)}</span><span class="env-pg s-ph"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldado'}</span></span><span class="eics s-ph">${icE}${icC}${icW}</span>`:`<span class="sub s-ph">${esc(loc)}</span><span class="env-pg s-ph"><span class="pill ok">✓ Enviado${v.fechaEntrega?' '+fmtF(v.fechaEntrega):''}</span> <span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldado'}</span></span><span class="eics s-ph">${icE}${icC}</span>`}</td><td data-l="Productos">${s==='enviar'?(esParcial(v)||uMain(v,'enviar')<totMain(v)?itemsEtapa(v,'enviar'):esc(itemsTxt(v))):itemsEtapa(v,'entregada')}${progHtml(v,true)}</td><td data-l="Transporte">${esc(v.transportista||'—')}</td><td data-l="${s==='enviar'?'Etiqueta':'Entregado'}">${s==='enviar'?etq:fmtF(v.fechaEntrega)}</td><td data-l="Cobro"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldada'}</span></td><td data-l="">${s==='enviar'?`<div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="enviar" data-id="${v.id}">Marcar entregado</button>${menuMas([{act:'armarEnvio',id:v.id,t:'Mensaje / etiqueta'},{act:'wppEnvio',id:v.id,t:'Enviar mensaje por WhatsApp'},{act:'verVenta',id:v.id,t:'Ver venta'}])}</div>`:`<button class="btn sm" data-act="verVenta" data-id="${v.id}">Ver</button>`}</td></tr>`};
   return head('Enviar','Envíos','Pedidos listos para despachar y los ya entregados.',`<button class="btn" data-act="loteEtq">Etiquetas en lote</button><button class="btn primary" data-act="armarEnvio">Mensaje y etiqueta</button>`)+
   `<div class="toolbar">${buscador('envios','Buscar cliente, producto o transportista…')}${segHtml('envios',[['enviar','Para enviar',pend.length],['entregados','Entregados',ent.length]])}${ordSel(clv,COLS)}</div>
   ${s==='enviar'?barraLote('envios',arr,'enviar','Marcar entregado'):''}
@@ -3904,9 +3909,33 @@ function envioMsgRapido(v){
 A.copiarEnvio=async(d,el)=>{const v=VEN[d.id];if(!v)return;const t=envioMsgRapido(v);if(!t){notificar({tipo:'aviso',msg:'La venta no tiene un cliente válido.'});return}
   try{await navigator.clipboard.writeText(t)}catch(e){const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';document.body.append(ta);ta.select();document.execCommand('copy');ta.remove()}
   window._ult=null;if(el&&typeof marcarCopiado==='function')marcarCopiado(el);notificar({tipo:'exito',msg:'Mensaje del envío copiado'})};
+/* mensaje del envío por WhatsApp a un número fijo (el que elijas: transporte, depósito, etc.) */
+const WA_ENV_K='merpto_wa_envios';
+const WA_ENV_DEF='+54 9 3493 52-2047';
+const waEnvNum=()=>{try{return localStorage.getItem(WA_ENV_K)||WA_ENV_DEF}catch(e){return WA_ENV_DEF}};
+function waNumLink(num,texto){
+  const u=linkWhatsApp(num,texto);if(u)return u;
+  const d=String(num||'').replace(/\D/g,'');if(d.length<11)return'';
+  return'https://wa.me/'+d+(texto?'?text='+encodeURIComponent(texto):'');
+}
+function pedirNumeroWa(luego){
+  const el=modal({titulo:'WhatsApp para mensajes de envío',ancho:460,sub:'Los mensajes de envío se mandan a este número.',body:`<div class="fgrid"><div class="full"><label>Número de WhatsApp</label><input data-f="num" type="tel" inputmode="tel" placeholder="Ej: 351 123 4567" value="${esc(waEnvNum())}"></div><div class="full dim" style="font-size:12.5px">Con código de área, sin 0 ni 15. Si es de otro país, ponelo con el código de país. Queda guardado en este dispositivo.</div></div>`,
+    foot:`<span class="msg" data-msg></span><div style="display:flex;gap:8px;margin-left:auto"><button class="btn" data-cerrar>Cancelar</button><button class="btn wa-send-b" data-ok>${luego?'Guardar y enviar':'Guardar'}</button></div>`});
+  const i=$('[data-f="num"]',el);setTimeout(()=>i.focus(),60);
+  const ok=()=>{const n=i.value.trim();if(!waNumLink(n,'x')){err(el,'Revisá el número: tiene que tener código de área (10 dígitos) o código de país.');return}
+    try{localStorage.setItem(WA_ENV_K,n)}catch(e){}{const b=el.closest('.back')||el;b.remove()}if(luego)luego()};
+  $('[data-ok]',el).onclick=ok;i.addEventListener('keydown',e=>{if(e.key==='Enter')ok()});
+}
+function abrirWaEnvio(texto){
+  const ir=()=>{const u=waNumLink(waEnvNum(),texto);if(!u){pedirNumeroWa(ir);return}window.open(u,'_blank','noopener');
+    window._ult=null;notificar({tipo:'info',msg:'Abriendo WhatsApp ('+waEnvNum()+')',accion:{txt:'Cambiar número',fn:()=>pedirNumeroWa()}})};
+  if(!waEnvNum())pedirNumeroWa(ir);else ir();
+}
+A.wppEnvio=d=>{const v=VEN[d.id];if(!v)return;const t=envioMsgRapido(v);if(!t){notificar({tipo:'aviso',msg:'La venta no tiene un cliente válido.'});return}abrirWaEnvio(t)};
+A.waEnvNum=()=>pedirNumeroWa();
 function envioModal(ventaId){
   let vid=ventaId||'';
-  const el=modal({titulo:'Armar envío',sub:'Elegí la venta: armo el mensaje para el transporte y la etiqueta.',ancho:680,body:`<div class="fgrid">
+  const el=modal({titulo:'Armar envío',sub:'Elegí la venta: armo el mensaje para el transporte y la etiqueta.',ancho:780,body:`<div class="fgrid">
     <div class="full"><label>Venta</label>${comboHtml('evVenta','Buscar por cliente, producto o fecha…')}</div>
     <div class="full sum" id="evCli" style="display:none"></div>
     ${fld('Empresa de envío',`<input data-f="empresa" list="evEmp" placeholder="Credifin, Via Cargo…" autocomplete="off"><datalist id="evEmp">${[...new Set(state.ventas.map(v=>v.transportista).filter(Boolean))].sort().map(t=>`<option value="${esc(t)}">`).join('')}</datalist>`)}
@@ -3914,7 +3943,7 @@ function envioModal(ventaId){
     ${fld('Bultos',inp('bultos',1,'','number'))}${fld('Seguro (valor declarado)',minp('seguro',0))}
     ${fld('Detalle',inp('detalle',''),'full')}${fld('Medidas',inp('medidas','','Opcional'),'full')}
     <div class="full"><label>Mensaje para el transporte</label><textarea class="env-msg" data-f="msg" rows="13" readonly placeholder="Acá aparece el mensaje cuando tocás “Generar mensaje”."></textarea></div></div>`,
-    foot:`<span class="msg" data-msg></span><div class="ft4" style="display:flex;gap:8px;margin-left:auto;flex-wrap:wrap"><button class="btn" data-cerrar>Cerrar</button><button class="btn" data-etq>Generar etiqueta</button><button class="btn" data-copy>Copiar mensaje</button><button class="btn primary" data-gen>Generar mensaje</button></div>`});
+    foot:`<span class="msg" data-msg></span><div class="ft4" style="display:flex;gap:8px;margin-left:auto;flex-wrap:wrap"><button class="btn" data-cerrar>Cerrar</button><button class="btn" data-etq>Generar etiqueta</button><button class="btn" data-copy>Copiar mensaje</button><button class="btn wa-send-b" data-wa>Enviar por WhatsApp</button><button class="btn primary" data-gen>Generar mensaje</button></div>`});
   const F=k=>$(`[data-f="${k}"]`,el);
   const cargar=()=>{
     const v=VEN[vid],box=$('#evCli',el);F('msg').value='';
@@ -3938,6 +3967,7 @@ function envioModal(ventaId){
     const b=Number(F('bultos').value)||1,seg=numIn(F('seguro')),det=F('detalle').value.trim()||itemsTxt(v),med=F('medidas').value.trim();
     F('msg').value=envioMsgTxt(c,{via,mod,b,seg,det,med});
   };
+  $('[data-wa]',el).onclick=()=>{const t=F('msg').value;if(!t){err(el,'Primero generá el mensaje.');return}err(el,'');abrirWaEnvio(t)};
   $('[data-copy]',el).onclick=async ev=>{const bt=ev.currentTarget;
     const t=F('msg').value;if(!t){err(el,'Primero generá el mensaje.');return}
     try{await navigator.clipboard.writeText(t)}catch(e){F('msg').removeAttribute('readonly');F('msg').select();document.execCommand('copy');F('msg').setAttribute('readonly','')}
