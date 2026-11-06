@@ -1911,6 +1911,14 @@ table.cards tr.ph-env .eic.ok{color:var(--good)!important;border-color:color-mix
 table.cards tr.ph-env .eic.ok::after{content:"";position:absolute;right:-3px;top:-3px;width:14px;height:14px;border-radius:50%;border:2px solid var(--panel);background:var(--good) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/8px no-repeat}
 table.cards tr.ph-env .eic svg{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 table.cards tr.ph-env .eic{position:relative}
+/* animación al copiar (reemplaza el aviso): el botón se pone verde, rebota y muestra el tilde */
+button.eic.copiado{animation:cpPop .42s cubic-bezier(.3,1.6,.5,1)}
+button.eic.copiado svg{animation:cpTick .35s ease-out both}
+.btn.copiado{animation:cpPop .42s cubic-bezier(.3,1.6,.5,1)}
+@keyframes cpPop{0%{transform:scale(1)}35%{transform:scale(.86)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes cpTick{from{stroke-dasharray:24;stroke-dashoffset:24}to{stroke-dasharray:24;stroke-dashoffset:0}}
+table.cards tr.ph-env button.eic.copiado{background:var(--good)!important;border-color:var(--good)!important;color:#fff!important}
+table.cards tr.ph-env button.eic.copiado svg{stroke-width:3!important}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -3975,7 +3983,7 @@ function envioMsgRapido(v){
 }
 A.copiarEnvio=async(d,el)=>{const v=VEN[d.id];if(!v)return;const t=envioMsgRapido(v);if(!t){notificar({tipo:'aviso',msg:'La venta no tiene un cliente válido.'});return}
   try{await navigator.clipboard.writeText(t)}catch(e){const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;opacity:0';document.body.append(ta);ta.select();document.execCommand('copy');ta.remove()}
-  window._ult=null;if(el&&typeof marcarCopiado==='function')marcarCopiado(el);notificar({tipo:'exito',msg:'Mensaje del envío copiado'})};
+  window._ult=null;if(el&&typeof marcarCopiado==='function')marcarCopiado(el);if(navigator.vibrate)try{navigator.vibrate(12)}catch(e){}};
 /* mensaje del envío por WhatsApp a un número fijo (el que elijas: transporte, depósito, etc.) */
 const WA_ENV_K='merpto_wa_envios';
 const WA_ENV_DEF='+54 9 3493 52-2047';
