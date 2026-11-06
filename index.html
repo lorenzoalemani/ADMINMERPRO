@@ -1791,7 +1791,6 @@ body table.cards tr.ph-pro[data-sw] td.pro-b .eic{position:absolute;right:12px;t
  .topbar{top:10px!important;height:54px!important;margin:10px -14px 22px!important;padding:0 10px 0 20px!important;border-radius:999px!important;border:1px solid transparent!important;background:transparent!important;transition:background-color .25s,border-color .25s,box-shadow .25s,-webkit-backdrop-filter .25s,backdrop-filter .25s}
  body.scrolled .topbar{background:color-mix(in srgb,var(--panel) 78%,transparent)!important;-webkit-backdrop-filter:blur(16px) saturate(1.3)!important;backdrop-filter:blur(16px) saturate(1.3)!important;border-color:var(--border)!important;box-shadow:0 14px 34px -14px rgba(0,0,0,.55),0 1px 0 color-mix(in srgb,#fff 6%,transparent) inset!important}
  :root[data-theme="light"] body.scrolled .topbar{box-shadow:0 14px 30px -16px rgba(20,30,70,.28)!important}
- .tcard thead th{top:64px!important}
  .bulk{top:72px!important}
 }
 .vista-g .cf-b.on::after{right:auto;left:calc(50% + 4px);top:calc(50% - 11px);width:7px;height:7px;box-shadow:0 0 0 2px var(--panel)}
@@ -1801,6 +1800,8 @@ body table.cards tr.ph-pro[data-sw] td.pro-b .eic{position:absolute;right:12px;t
  #view .tcard.tc-scroll{overflow-x:auto!important;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:thin}
  #view .tcard.tc-scroll>table.cards{min-width:max(100%,900px)}
 }
+/* el encabezado de las tablas (Fecha, Cliente…) no sigue al bajar */
+#view table thead th,#view table thead{position:static!important;top:auto!important}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
