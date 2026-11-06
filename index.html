@@ -2608,7 +2608,7 @@ VIEWS.produccion=()=>{
   base.forEach(v=>(v.items||[]).forEach(i=>{const n=nombreProd(i.productoId);if(!n)return;const c=i.color||'sin color',k=n+'||'+c,p=PRO[i.productoId],cant=qEt(v,i,s);if(cant<=0)return;(tot[k]=tot[k]||{n,c,q:0}).q+=cant;if(p&&p.esAccesorio)ac.a+=cant;else ac.p+=cant}));
   const lista=Object.values(tot).sort((x,y)=>y.q-x.q||x.n.localeCompare(y.n));
   const resumen=`<div class="tcard" style="margin-top:16px;padding:18px 20px"><h3 style="margin:0 0 4px;font-size:15px">${s==='embalar'?'Total a embalar':'Total a fabricar'}</h3><p class="dim" style="margin:0 0 12px;font-size:12.5px">Unidades pendientes de los pedidos de la lista, por producto y color.</p>${lista.length?`<ul class="res-list">${lista.map(x=>`<li><b>${x.q}</b> ${esc(x.n)} <span class="dim">— ${esc(x.c)}</span></li>`).join('')}</ul><p class="dim" style="margin:12px 0 0;font-size:13px">Total <b style="color:var(--text)">${ac.p}</b> producto${ac.p===1?'':'s'} y <b style="color:var(--text)">${ac.a}</b> accesorio${ac.a===1?'':'s'}</p>`:'<div class="dim">Nada para resumir.</div>'}</div>`;
-  const fila=v=>{const c=colorProducto(nomPrincipal(v)),ip=itemPrincipal(v),kc=coloresHex(ip&&ip.color?String(ip.color):'')[0]||'#9ca3af';return`<tr class="click ph-pro ${c?'pcg':''} kx" data-act="verVenta" data-id="${v.id}" data-sw="avanzar" data-e="${s}" data-swl="✓ ${SIG_TXT[s]}" style="${c?`--pc:${c};`:''}--tk:${kc}">${chkCelda('produccion',v.id)}${proHead(v,s)}<td data-l="Fecha" class="nw">${fmtF(v.fecha)}</td><td data-l="Estado">${s==='fabricar'?estadoEspera(v):'<span class="pill ok">Fabricado</span>'}</td><td class="main"><b>${esc(nombreCli(v.clienteId))}</b></td><td class="pro-b s-ph"><button type="button" class="eic eic-ok" data-act="avanzar" data-e="${s}" data-id="${v.id}" aria-label="${SIG_TXT[s]}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button></td><td data-l="Pedido"><div class="plist">${itemsEtapa(v,s)}</div>${progHtml(v,true)}</td>${v.notas?`<td class="pro-nota s-ph"><div class="nota-band"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>${esc(v.notas)}</span></div></td>`:''}<td data-l="Color">${puntosColor(v)}</td><td data-l="Notas" class="notas-c">${v.notas?`<span class="nota-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>${esc(v.notas)}</span>`:'<span class="dim">—</span>'}</td>${s==='embalar'?`<td data-l="Debe" class="r nw">${debeDe(v)>0?`<b class="num">${money(debeDe(v))}</b>`:'<span class="pill ok">Saldada</span>'}</td>`:''}<td data-l=""><div class="fact-cell">${s==='embalar'&&linkWhatsApp((CLI[v.clienteId]||{}).telefono)?`<span class="eic-row s-full"><button class="eic eic-wa" data-act="avisoEmb" data-id="${v.id}" title="Avisar al cliente por WhatsApp" aria-label="Avisar al cliente por WhatsApp">${WA_IC}</button></span>`:''}<button class="btn primary sm mut row" data-act="avanzar" data-e="${s}" data-id="${v.id}">${SIG_TXT[s]}</button>${menuMas([...(s==='embalar'?[{act:'avisoEmb',id:v.id,t:debeDe(v)>0?'Mensaje de cobro':'Avisar al cliente'}]:[]),{act:'verVenta',id:v.id,t:'Ver venta'}])}</div></td></tr>`};
+  const fila=v=>{const c=colorProducto(nomPrincipal(v)),ip=itemPrincipal(v),kc=coloresHex(ip&&ip.color?String(ip.color):'')[0]||'#9ca3af';return`<tr class="click ph-pro ${c?'pcg':''} kx" data-act="verVenta" data-id="${v.id}" data-sw="avanzar" data-e="${s}" data-swl="✓ ${SIG_TXT[s]}" style="${c?`--pc:${c};`:''}--tk:${kc}">${chkCelda('produccion',v.id)}${proHead(v,s)}<td data-l="Fecha" class="nw">${fmtF(v.fecha)}</td><td data-l="Estado">${s==='fabricar'?estadoEspera(v):'<span class="pill ok">Fabricado</span>'}</td><td class="main"><b>${esc(nombreCli(v.clienteId))}</b></td><td class="pro-b s-ph"><button type="button" class="eic eic-ok" data-act="avanzar" data-e="${s}" data-id="${v.id}" aria-label="${SIG_TXT[s]}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button></td><td data-l="Pedido"><div class="plist">${itemsEtapa(v,s)}</div>${progHtml(v,true)}</td>${v.notas?`<td class="pro-nota s-ph"><div class="nota-band"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>${esc(v.notas)}</span></div></td>`:''}<td data-l="Color">${puntosColor(v)}</td><td data-l="Notas" class="notas-c">${v.notas?`<span class="nota-chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>${esc(v.notas)}</span>`:'<span class="dim">—</span>'}</td>${s==='embalar'?`<td data-l="Debe" class="r nw">${debeDe(v)>0?`<b class="num">${money(debeDe(v))}</b>`:'<span class="pill ok">Saldada</span>'}</td>`:''}<td data-l=""><div class="fact-cell">${s==='embalar'&&linkWhatsApp((CLI[v.clienteId]||{}).telefono)?`<span class="eic-row s-full"><button class="eic eic-wa" data-act="avisoEmb" data-id="${v.id}" title="Avisar al cliente por WhatsApp" aria-label="Avisar al cliente por WhatsApp">${WA_IC}</button></span>`:''}<button class="btn primary sm mut row" data-act="avanzar" data-e="${s}" data-id="${v.id}">${SIG_TXT[s]}</button></div></td></tr>`};
   return head('Producir','Producción','Pedidos ordenados del más antiguo al más nuevo. Avanzá cada uno cuando esté listo.')+
   `<div class="toolbar" data-tab="${s}">${buscador('produccion','Buscar cliente o producto…')}${segHtml('produccion',[['fabricar','Por fabricar',a.length],['embalar','Para embalar',b.length]])}${ordSel(clv,COLS)}</div>
   ${s==='fabricar'&&atras?`<div class="banner-falta" style="margin-bottom:12px"><span class="bf-ic">⚠</span><span><b>${atras}</b> pedido${atras===1?'':'s'} con 4 semanas o más de espera</span></div>`:''}
@@ -2638,7 +2638,7 @@ VIEWS.envios=()=>{
     const loc=[c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada';
     const icW=`<button class="eic eic-wa" data-act="wppEnvio" data-id="${v.id}" aria-label="Enviar mensaje del envío por WhatsApp" title="Enviar mensaje del envío por WhatsApp">${WA_IC}</button>`;
     const tapV=matchMedia('(max-width:700px)').matches;
-    return`<tr class="${s==='enviar'?'ph-env':'ph-env ph-ent'}${tapV?' click':''} kx" style="--tk:${tColor(v.transportista).c}" ${s==='enviar'?`data-sw="avanzar" data-e="enviar" data-id="${v.id}" data-debe="${debeDe(v)}" data-swl="${debeDe(v)>0?'⚠ Con saldo':'✓ Entregado'}"`:tapV?`data-id="${v.id}"`:''}${tapV?' data-act="verVenta"':''}>${s==='enviar'?chkCelda('envios',v.id):''}${true?`<td class="env-h s-ph" style="--tc:${tColor(v.transportista).c};--tt:${tColor(v.transportista).t}"><span class="eh-l"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>${esc((v.transportista||'Sin transporte').toUpperCase())}</span><span class="eh-r">${nb} bulto${nb===1?'':'s'}</span></td>`:''}<td class="main"><b>${esc(nombreCli(v.clienteId))}</b><span class="sub s-full">${esc([c.direccion,c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada')}</span>${s==='enviar'?`<span class="sub s-ph">${esc(loc)}</span><span class="env-pg s-ph"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldado'}</span></span><span class="eics s-ph">${icE}${icC}${icW}</span>`:`<span class="sub s-ph">${esc(loc)}</span><span class="env-pg s-ph"><span class="pill ok">✓ Enviado${v.fechaEntrega?' '+fmtF(v.fechaEntrega):''}</span> <span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldado'}</span></span><span class="eics s-ph">${icE}${icC}</span>`}</td><td data-l="Productos">${s==='enviar'?(esParcial(v)||uMain(v,'enviar')<totMain(v)?itemsEtapa(v,'enviar'):esc(itemsTxt(v))):itemsEtapa(v,'entregada')}${progHtml(v,true)}</td><td data-l="Transporte"><span class="tr-pill" style="--tc:${tColor(v.transportista).c};--tt:${tColor(v.transportista).t}"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>${esc(v.transportista||'Sin transporte')}</span><span class="sub">${nb} bulto${nb===1?'':'s'}</span></td><td data-l="${s==='enviar'?'Etiqueta':'Entregado'}">${s==='enviar'?`<span class="eic-row">${icE}${icC}${icW}</span>`:fmtF(v.fechaEntrega)}</td><td data-l="Cobro"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldada'}</span></td><td data-l="">${s==='enviar'?`<div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="enviar" data-id="${v.id}">Marcar entregado</button>${menuMas([{act:'armarEnvio',id:v.id,t:'Mensaje / etiqueta'},{act:'wppEnvio',id:v.id,t:'Enviar mensaje por WhatsApp'},{act:'verVenta',id:v.id,t:'Ver venta'}])}</div>`:`<button class="btn sm" data-act="verVenta" data-id="${v.id}">Ver</button>`}</td></tr>`};
+    return`<tr class="${s==='enviar'?'ph-env':'ph-env ph-ent'} click kx" style="--tk:${tColor(v.transportista).c}" ${s==='enviar'?`data-sw="avanzar" data-e="enviar" data-id="${v.id}" data-debe="${debeDe(v)}" data-swl="${debeDe(v)>0?'⚠ Con saldo':'✓ Entregado'}"`:`data-id="${v.id}"`} data-act="verVenta">${s==='enviar'?chkCelda('envios',v.id):''}${true?`<td class="env-h s-ph" style="--tc:${tColor(v.transportista).c};--tt:${tColor(v.transportista).t}"><span class="eh-l"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>${esc((v.transportista||'Sin transporte').toUpperCase())}</span><span class="eh-r">${nb} bulto${nb===1?'':'s'}</span></td>`:''}<td class="main"><b>${esc(nombreCli(v.clienteId))}</b><span class="sub s-full">${esc([c.direccion,c.ciudad,c.provincia].filter(Boolean).join(', ')||'Sin dirección cargada')}</span>${s==='enviar'?`<span class="sub s-ph">${esc(loc)}</span><span class="env-pg s-ph"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldado'}</span></span><span class="eics s-ph">${icE}${icC}${icW}</span>`:`<span class="sub s-ph">${esc(loc)}</span><span class="env-pg s-ph"><span class="pill ok">✓ Enviado${v.fechaEntrega?' '+fmtF(v.fechaEntrega):''}</span> <span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldado'}</span></span><span class="eics s-ph">${icE}${icC}</span>`}</td><td data-l="Productos">${s==='enviar'?(esParcial(v)||uMain(v,'enviar')<totMain(v)?itemsEtapa(v,'enviar'):esc(itemsTxt(v))):itemsEtapa(v,'entregada')}${progHtml(v,true)}</td><td data-l="Transporte"><span class="tr-pill" style="--tc:${tColor(v.transportista).c};--tt:${tColor(v.transportista).t}"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>${esc(v.transportista||'Sin transporte')}</span><span class="sub">${nb} bulto${nb===1?'':'s'}</span></td><td data-l="${s==='enviar'?'Etiqueta':'Entregado'}">${s==='enviar'?`<span class="eic-row">${icE}${icC}${icW}</span>`:fmtF(v.fechaEntrega)}</td><td data-l="Cobro"><span class="pill ${d>0?'warn':'ok'}">${d>0?'Debe '+money(d):'Saldada'}</span></td><td data-l="">${s==='enviar'?`<div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="enviar" data-id="${v.id}">Marcar entregado</button></div>`:`<button class="btn sm" data-act="verVenta" data-id="${v.id}">Ver</button>`}</td></tr>`};
   return head('Enviar','Envíos','Pedidos listos para despachar y los ya entregados.',`<button class="btn" data-act="loteEtq">Etiquetas en lote</button><button class="btn primary" data-act="armarEnvio">Mensaje y etiqueta</button>`)+
   `<div class="toolbar">${buscador('envios','Buscar cliente, producto o transportista…')}${segHtml('envios',[['enviar','Para enviar',pend.length],['entregados','Entregados',ent.length]])}${ordSel(clv,COLS)}</div>
   ${s==='enviar'?barraLote('envios',arr,'enviar','Marcar entregado'):''}
@@ -3106,7 +3106,7 @@ const A={
   nuevoInsumo:()=>formInsumo(null),
   editInsumo:d=>{if(W())formInsumo(d.id)},
   avanzar:d=>avanzar(d.id,d.e,d.f),retroceder:d=>retroceder(d.id),
-  etiqueta:async d=>{const v=VEN[d.id];if(!v)return;if(!await confirmar(v.etiquetaImpresa==='si'?'¿Marcar la etiqueta como NO impresa?':'¿Marcar la etiqueta como impresa?'))return;v.etiquetaImpresa=v.etiquetaImpresa==='si'?'no':'si';persist('Ventas','update',v.id,v);guardarLocal();render()},
+  etiqueta:async d=>{const v=VEN[d.id];if(!v)return;if(v.etiquetaImpresa!=='si'&&typeof etiquetaModal==='function'){etiquetaModal(v.id,(typeof bultosDeVenta==='function'&&bultosDeVenta(v))||1);return}if(!await confirmar(v.etiquetaImpresa==='si'?'¿Marcar la etiqueta como NO impresa?':'¿Marcar la etiqueta como impresa?'))return;v.etiquetaImpresa=v.etiquetaImpresa==='si'?'no':'si';persist('Ventas','update',v.id,v);guardarLocal();render()},
   buscar:()=>buscarGlobal()
 };
 function cerrarCapas(soloDrawers){$$('#layer .back').forEach(x=>{if(!soloDrawers||x.classList.contains('drawer-back')||x.querySelector('#gq'))x.remove()})}
@@ -6051,7 +6051,10 @@ function avRender(){
   const p=$('#avPop');if(!p||p.hidden)return;const{G}=avisos();
   p.innerHTML=`<div class="av-h"><b>Avisos</b><span><button data-av="leer">Marcar todo como leído</button><button data-av="notas">Ver notas</button></span></div>`+(G.length?G.map(g=>`<div class="av-s"><h5><span>${g.g}</span><span>${g.r||''}</span></h5>${g.it.map(x=>`<button class="av-i${x.u?' av-u':''}" data-av="go" data-key="${esc(x.key)}" data-a="${x.a}" ${x.f?`data-f="${x.f}"`:''} ${x.id?`data-id="${x.id}"`:''}><span class="av-ic ${x.k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${AV_IC[x.i]}</svg></span><span class="av-tx"><b>${esc(x.t)}</b><small>${esc(x.d)}</small></span><span class="av-go">›</span></button>`).join('')}</div>`).join(''):'<div class="av-vac">Todo en orden. No hay avisos.</div>')+`<div class="av-f"><span>Las tareas del día (fabricar, embalar, enviar, cobrar) están en Resumen.</span><button data-av="hoy">Ver tareas de hoy ›</button></div>`;
 }
-function avCerrar(){const p=$('#avPop'),b=$('#btnAvisos');if(p)p.hidden=true;if(b)b.setAttribute('aria-expanded','false')}
+function avLimpiarLeidas(){/* las novedades (ventas y pagos) ya leídas se borran al cerrar el centro de avisos */
+  const rd=new Set(avLeer(AVR,[])),feed=avLeer(AVF,[]),q=feed.filter(f=>!rd.has('f:'+f.id));
+  if(q.length!==feed.length){avGuardar(AVF,q);avGuardar(AVR,[...rd].filter(k=>!k.startsWith('f:')||q.some(f=>'f:'+f.id===k)));avBadge()}}
+function avCerrar(){const p=$('#avPop'),b=$('#btnAvisos');const ab=p&&!p.hidden;if(p)p.hidden=true;if(b)b.setAttribute('aria-expanded','false');if(ab)avLimpiarLeidas()}
 function avAbrir(){
   let p=$('#avPop');if(!p){p=document.createElement('div');p.id='avPop';p.className='av-pop';p.hidden=true;document.body.append(p)}
   const b=$('#btnAvisos');p.hidden=false;avRender();b.setAttribute('aria-expanded','true');
@@ -6387,6 +6390,57 @@ Object.assign(A,{
     try{const a=avisosEmb(),n=new Date(),p=x=>String(x).padStart(2,'0');const cd=document.querySelector('.wa-card[data-wa="'+d.id+'"]'),st=(cd&&cd.dataset.st)||'embalar';a[v.id+':'+st]=`${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())}T${p(n.getHours())}:${p(n.getMinutes())}`;localStorage.setItem(AVISO_K,JSON.stringify(a))}catch(e){}
     const c=document.querySelector('.wa-card[data-wa="'+d.id+'"] .wa-est');if(c){const cd2=c.closest('.wa-card'),a=avisosEmb()[v.id+':'+((cd2&&cd2.dataset.st)||'embalar')]||'';c.className='wa-est';c.textContent='✓ Avisado '+fmtF(a.slice(0,10))+' '+a.slice(11,16)}}
 });
+
+/* celular: cerrar ventanas deslizando hacia abajo (cuando el contenido ya está arriba de todo) */
+(()=>{
+  const ph=()=>matchMedia('(max-width:700px)').matches;
+  const SEL='.back .modal,.back .drawer,#mas.on .mas-sh';
+  let S=null,y0=0,x0=0,t0=0,dy=0,on=false,dead=false,lastY=0,lastT=0,vy=0,bk=null,bg0=null;
+  const fondo=(k)=>{if(!bk)return;if(bk.classList.contains('back')){if(!bg0){const m=getComputedStyle(bk).backgroundColor.match(/[\d.]+/g)||[0,0,0,0];bg0=m.map(Number);if(bg0.length<4)bg0[3]=1}bk.style.backgroundColor=`rgba(${bg0[0]},${bg0[1]},${bg0[2]},${(bg0[3]*k).toFixed(3)})`}else bk.style.opacity=String(k)};
+  const fondoReset=()=>{if(!bk)return;bk.style.backgroundColor='';bk.style.opacity='';bk.style.transition='';bg0=null};
+  const subido=(t,s)=>{for(let e=t;e&&e!==s.parentElement;e=e.parentElement){if(e.scrollTop>0)return true}return false};
+  const cerrar=s=>{
+    const b=s.closest('.back');
+    if(b){const x=b.querySelector('[data-cerrar]');if(x)x.click();else b.remove();return}
+    if(s.closest('#mas')&&typeof masCerrar==='function'){s.style.transition='';s.style.transform='';masCerrar()}
+  };
+  document.addEventListener('touchstart',e=>{
+    S=null;on=false;dead=false;if(!ph()||e.touches.length!==1)return;
+    const s=e.target.closest&&e.target.closest(SEL);if(!s)return;
+    if(e.target.closest('input,textarea,select,[contenteditable],.dp-pop,.dp-sheet,canvas'))return;
+    if(subido(e.target,s)){dead=true}
+    S=s;y0=lastY=e.touches[0].clientY;x0=e.touches[0].clientX;t0=lastT=performance.now();dy=0;vy=0;
+    bk=s.closest('.back')||(s.closest('#mas')&&s.closest('#mas').querySelector('.mas-ov'));bg0=null;
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!S||dead)return;const y=e.touches[0].clientY,x=e.touches[0].clientX,d=y-y0,now=performance.now();
+    if(!on){
+      if(Math.abs(x-x0)>Math.abs(d)&&Math.abs(x-x0)>8){dead=true;return}
+      if(d<-4||subido(e.target,S)){dead=true;return}
+      if(d<8)return;
+      on=true;y0=y;S.style.transition='none';S.style.animation='none';S.style.willChange='transform';
+    }
+    e.preventDefault();
+    dy=Math.max(0,y-y0);vy=(y-lastY)/Math.max(1,now-lastT);lastY=y;lastT=now;
+    S.style.transform=`translate3d(0,${dy}px,0)`;
+    fondo(Math.max(0,1-dy/(S.offsetHeight*1.1)));
+  },{passive:false});
+  const fin=()=>{
+    if(!S)return;const s=S;S=null;if(!on)return;on=false;
+    const h=s.offsetHeight,va=(dy>0?vy:0);
+    if(dy>Math.min(140,h*.28)||(va>.55&&dy>30)){
+      const dur=Math.max(140,Math.min(260,(h-dy)/Math.max(1.4,va)));
+      s.style.transition=`transform ${dur}ms cubic-bezier(.2,.7,.3,1)`;s.style.transform=`translate3d(0,${h+40}px,0)`;
+      if(bk){bk.style.transition=`opacity ${dur}ms ease-out,background-color ${dur}ms ease-out`;fondo(0)}
+      const b2=bk;setTimeout(()=>{cerrar(s);if(b2){b2.style.transition='';b2.style.opacity='';b2.style.backgroundColor=''}},dur);
+    }else{
+      s.style.transition='transform .32s cubic-bezier(.2,.9,.25,1.15)';s.style.transform='translate3d(0,0,0)';
+      if(bk){bk.style.transition='opacity .25s,background-color .25s';fondo(1)}
+      setTimeout(()=>{s.style.transition='';s.style.transform='';s.style.willChange='';fondoReset()},340);
+    }
+  };
+  document.addEventListener('touchend',fin,{passive:true});document.addEventListener('touchcancel',fin,{passive:true});
+})();
 /* ================= Arranque ================= */
 $('#btnMenu').onclick=()=>$('#sidebar').classList.toggle('open');
 $('#btnSearch').onclick=()=>A.buscar();
