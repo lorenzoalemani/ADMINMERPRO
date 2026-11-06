@@ -1728,6 +1728,7 @@ body table.cards tr.ph-env:is([data-sw],.ph-ent) .eics.s-ph{top:calc(50% + 17px)
 .sw-clone table{width:100%}
 .sw-clone tr{background:var(--panel)!important}
 
+@media (max-width:700px){
 /* Producción y Envíos: relleno verde que sigue al dedo */
 body table.cards tr[data-sw]{--fp:0}
 body table.cards tr.ph-env:is([data-sw],.ph-ent) td.env-h{position:relative}
@@ -1741,6 +1742,7 @@ body table.cards tr[data-sw].sw-go td,body table.cards tr[data-sw].sw-fill td{op
 /* Envíos con saldo: relleno ámbar */
 body table.cards tr[data-sw][data-debe]:not([data-debe="0"])::before{background:linear-gradient(90deg,rgba(224,162,26,.2),rgba(224,162,26,.62))!important}
 body table.cards tr[data-sw][data-debe]:not([data-debe="0"])::after{color:#7a4a00}
+}
 .sw-bar{position:fixed;left:12px;right:12px;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--panel);border:1px solid #f1cf8a;border-radius:16px;padding:10px 10px 10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 28px rgba(20,30,70,.18);transform:translateY(14px);opacity:0;transition:transform .3s cubic-bezier(.2,.9,.25,1),opacity .22s;overflow:hidden}
 .sw-bar.on{transform:none;opacity:1}
 .sw-bar .ic{flex:none;width:30px;height:30px;border-radius:50%;background:#fff3dc;color:#b45309;display:grid;place-items:center;font-size:15px}
@@ -1783,6 +1785,19 @@ body table.cards tr.ph-pro[data-sw] td.pro-b .eic{position:absolute;right:12px;t
 
 /* sin botón +: la barra inferior ocupa todo el ancho */
 @media (max-width:700px){body.sin-fab .abar{right:12px!important}body.sin-fab .abar button{flex:1 1 0}body.sin-fab #fab{display:none!important}}
+
+/* computadora: la barra superior toma fondo al hacer scroll para que la lista no se vea por detrás */
+@media (min-width:701px){
+ .topbar{transition:background-color .2s,box-shadow .2s,border-color .2s}
+ body.scrolled .topbar{background:color-mix(in srgb,var(--bg) 86%,transparent)!important;-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);border-bottom:1px solid var(--border)!important;box-shadow:0 6px 18px -12px rgba(0,0,0,.45)}
+}
+.vista-g .cf-b.on::after{right:auto;left:calc(50% + 4px);top:calc(50% - 11px);width:7px;height:7px;box-shadow:0 0 0 2px var(--panel)}
+.vista-g .cf-b.on:hover::after{box-shadow:0 0 0 2px var(--panel-2)}
+/* tablet y notebook chica: la tabla se desplaza de costado en vez de quedar cortada */
+@media (min-width:701px) and (max-width:1279px){
+ #view .tcard.tc-scroll{overflow-x:auto!important;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:thin}
+ #view .tcard.tc-scroll>table.cards{min-width:max(100%,900px)}
+}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -5066,7 +5081,7 @@ function progHtml(v,chica){
   const c=cnt(v,itemPrincipal(v)),p=[t-c.fab,c.fab-c.emb,c.emb-c.ent,c.ent],K=['pf','pe','pv','pd'],N=['Por fabricar','Para embalar','Para enviar','Entregados'];
   if(chica&&p[0]===t)return'';
   const bar=`<span class="prg ${chica?'s':''}">${p.map((n,i)=>n?`<i class="${K[i]}" style="flex:${n}" title="${N[i]}: ${n}"></i>`:'').join('')}</span>`;
-  if(chica)return`<span class="prg-w">${bar}<small class="dim">${c.ent} de ${t} entregados</small></span>`;
+  if(chica){const [n,w]=c.ent?[c.ent,'entregados']:c.emb?[c.emb,'embalados']:[c.fab,'fabricados'];return`<span class="prg-w">${bar}<small class="dim">${n} de ${t} ${w}</small></span>`}
   return`<div class="prg-box">${bar}<div class="prg-l">${p.map((n,i)=>`<span><i class="${K[i]}"></i>${N[i]} <b class="num">${n}</b></span>`).join('')}</div></div>`;
 }
 /* lista de ítems con lo que hay en una etapa */
@@ -5932,7 +5947,7 @@ function phSync(){
   const bb=document.getElementById('btnBack');
   if(bb)bb.hidden=!ph||TABS.includes(vista);
   if(TABS.includes(vista))phSync.last=vista;
-  if(ph){const c=document.getElementById('crumb');if(c&&vista==='resumen')c.textContent='Inicio'}
+  if(ph){const c=document.getElementById('crumb'),CORTO={resumen:'Inicio',stock:'Stock',personas:'Personas',libro:'Libro diario'};if(c&&CORTO[vista])c.textContent=CORTO[vista]}
   segAnim();ordToggle();
   const sb=document.getElementById('btnSearch');if(sb)sb.classList.toggle('on',document.body.classList.contains('ph-find'));
 }
@@ -6173,6 +6188,14 @@ document.addEventListener('pointerdown',e=>{
   document.addEventListener('touchend',fin,{passive:true});document.addEventListener('touchcancel',fin,{passive:true});
   document.addEventListener('click',e=>{if(Date.now()-block<450&&e.target.closest&&e.target.closest('tr[data-sw]')){e.stopPropagation();e.preventDefault()}},true);
 })();
+/* barra superior con fondo cuando la página bajó */
+(()=>{let on=false;const f=()=>{const s=scrollY>6;if(s!==on){on=s;document.body.classList.toggle('scrolled',s)}};window.addEventListener('scroll',f,{passive:true});f()})();
+/* tablas que no entran a lo ancho (tablet / notebook chica): se desplazan de costado; las que entran mantienen el encabezado fijo */
+(()=>{let t=0;const medir=()=>{t=0;const ok=innerWidth>700&&innerWidth<1280;document.querySelectorAll('#view .tcard').forEach(c=>{const tb=c.querySelector(':scope>table.cards');if(!tb||!ok){c.classList.remove('tc-scroll');return}
+  if(c.classList.contains('tc-scroll')){c.classList.remove('tc-scroll')}
+  const sobra=tb.getBoundingClientRect().width>c.clientWidth+2;c.classList.toggle('tc-scroll',sobra)})};
+ const pedir=()=>{if(!t)t=requestAnimationFrame(medir)};
+ const v=document.getElementById('view');if(v)new MutationObserver(pedir).observe(v,{childList:true});window.addEventListener('resize',pedir);pedir()})();
 /* ================= Arranque ================= */
 $('#btnMenu').onclick=()=>$('#sidebar').classList.toggle('open');
 $('#btnSearch').onclick=()=>A.buscar();
