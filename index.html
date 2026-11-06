@@ -1837,6 +1837,9 @@ button.wpp-av{width:100%;font:inherit;text-align:left;cursor:pointer}
  .mc-b{display:flex}.mc-b .btn{flex:1;justify-content:center;min-height:44px}
  .mc-b [data-mc-wa]{background:#25D366!important;border-color:#25D366!important;color:#fff!important}
 }
+.mc textarea{min-height:230px;line-height:1.5;font-size:14px}
+@media (max-width:700px){.mc textarea{min-height:260px}}
+.mc-b [data-mc-wa]{background:#25D366!important;border-color:#25D366!important;color:#fff!important}.mc-b [data-mc-wa]:hover{background:#1fbe5b!important}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -2757,7 +2760,7 @@ function mensajeEtapa(v,st){
   const saldo=d>0?[`💳 Saldo pendiente: *${money(d)}*${st==='embalar'?' (a abonar antes del despacho)':''}`]:[`✅ El pedido está abonado en su totalidad.`];
   const cab=[`Hola${nom?' '+nom:''}, ¿cómo estás? 👋`,`Te escribimos de *MerPro Equipamientos*.`,''];
   if(st==='fabricar')return[...cab,`Recibimos tu pedido y ya está *en fabricación*:`,...its,'',`⏱️ Te avisamos apenas esté listo para despachar${v.transportista?' por '+v.transportista:''}.`,...saldo,'',`Cualquier consulta, respondé este mensaje. ¡Gracias por elegirnos!`].join('\n');
-  return[...cab,`Tu pedido ya está *fabricado* y lo estamos embalando para despacharlo${parcial?' (esta entrega es parcial)':''}:`,...its,'',...(v.transportista?[`🚚 Envío: ${v.transportista}`]:[]),...saldo,'',`Te avisamos cuando salga. Cualquier consulta, respondé este mensaje. ¡Gracias por tu compra!`].join('\n');
+  return mensajeTerminado(v,st);
 }
 const mensajeEmbalado=v=>mensajeEtapa(v,'embalar');
 const waPrev=t=>esc(t).replace(/\*([^*\n]+)\*/g,'<b>$1</b>');
@@ -2769,7 +2772,7 @@ function waChat(cliId){
 }
 function avisoWpp(v){
   if(esCancelada(v))return'';
-  const st=uMain(v,'embalar')>0||etapa(v)==='embalar'?'embalar':etapa(v)==='fabricar'?'fabricar':'';
+  const st=uMain(v,'embalar')>0||etapa(v)==='embalar'?'embalar':'';
   if(!st)return waChat(v.clienteId);
   const c=CLI[v.clienteId]||{},tel=String(c.telefono||'').trim(),ok=!!linkWhatsApp(tel),av=avisosEmb()[v.id+':'+st]||(st==='embalar'?avisosEmb()[v.id]:'');
   const est=av?`<span class="wa-est">✓ Avisado ${fmtF(av.slice(0,10))} ${av.slice(11,16)}</span>`:`<span class="wa-est pend">Sin avisar</span>`;
@@ -5061,17 +5064,25 @@ function telHtml(v){
   const w=linkWhatsApp(c.telefono),t=esc(c.telefono);
   return`<span class="sub tel">${w?`<a href="${w}" target="_blank" rel="noopener" title="Abrir chat de WhatsApp" data-stop>${t}</a>`:`<span>${t}</span>`}<button type="button" class="tel-cp" data-act="copiarTel" data-t="${t}" title="Copiar número">${IC_COPY}</button></span>`;
 }
-function mensajeCobro(v,st){
-  const it=(v.items||[]).map(i=>`${i.cantidad} ${nombreProd(i.productoId)}`).join(' + ')||'sin productos',d=debeDe(v);
-  let ent='';
-  if(st&&totMain(v)>1){const q=uMain(v,st);if(q>0&&q<totMain(v)){ent=` - Esta entrega: ${itemsEtapaTxt(v,st)} (${money(valorUnidades(v,q))})`}}
-  return`${nombreCli(v.clienteId)} - ${it} - Total: ${money(v.precioARS)} - Seña: ${money(pagadoDe(v))} - Debe: ${d>0?money(d):'Saldado'}${ent}`;
+function mensajeCobro(v,st){return mensajeTerminado(v,st||'embalar')}
+/* mensaje "pedido terminado": el mismo para el Mensaje de cobro (web) y el aviso de embalado (celular) */
+function mensajeTerminado(v,st){
+  st=st||'embalar';
+  const c=CLI[v.clienteId]||{},nom=String(c.nombre||nombreCli(v.clienteId)||'').trim().split(/\s+/)[0]||'';
+  const q=uMain(v,st),parcial=totMain(v)>1&&q>0&&q<totMain(v),d=debeDe(v),t=Number(v.precioARS||0),p=pagadoDe(v);
+  const its=(v.items||[]).map(i=>({i,n:parcial?qEt(v,i,st):nI(i)})).filter(x=>x.n>0).map(x=>`- ${nombreProd(x.i.productoId)}${x.i.color?' ('+x.i.color+')':''} x${x.n}`);
+  return[`¡Hola${nom?' '+nom:''}! Te escribimos de MerPro para avisarte que tu pedido ya está terminado${parcial?' (esta entrega es parcial)':''}.`,'',
+    'Detalle del pedido:',...(its.length?its:['- '+itemsTxt(v)]),'',
+    `Total: ${money(t)} · Abonado: ${money(p)} · Saldo: ${d>0?money(d):'$0'}`,'',
+    `Ya lo estamos embalando para despacharlo${v.transportista?' por '+v.transportista:''}. Te compartimos a continuación un video de cómo quedó.`,'',
+    d>0?`Para realizar el envío, solo resta completar el saldo de ${money(d)}. Una vez hecho el pago, envianos el comprobante por este medio y lo despachamos a la brevedad.`:`El pedido ya está abonado en su totalidad, así que lo despachamos a la brevedad.`,'',
+    '¡Muchas gracias por tu compra!'].join('\n');
 }
 function modalCobro(ids){
   const vs=ids.map(id=>VEN[id]).filter(v=>v&&debeDe(v)>0);
   if(!vs.length){toast('Los pedidos elegidos ya están saldados.',true);return}
   const tot=vs.reduce((q,v)=>q+debeDe(v),0);
-  const el=modal({titulo:'Mensaje de cobro',ancho:640,sub:`${vs.length} cliente${vs.length===1?'':'s'} · a cobrar ${money(tot)}`,body:`<div class="mc-list">${vs.map((v,i)=>{const c=CLI[v.clienteId]||{};return`<div class="mc" data-i="${i}"><div class="mc-h"><div><b>${esc(nombreCli(v.clienteId))}</b>${telHtml(v)}</div><span class="dim num">${money(debeDe(v))}</span></div><textarea rows="3" data-mc="${v.id}">${esc(mensajeCobro(v,'embalar'))}</textarea><div class="mc-b"><button type="button" class="btn sm" data-mc-copy="${v.id}">${IC_COPY}Copiar mensaje</button>${linkWhatsApp(c.telefono)?`<button type="button" class="btn sm primary" data-mc-wa="${v.id}">Enviar por WhatsApp</button>`:'<span class="dim" style="font-size:12.5px">Sin teléfono válido para WhatsApp</span>'}</div></div>`}).join('')}</div>`,foot:`<span class="msg"></span><div style="display:flex;gap:8px;margin-left:auto"><button class="btn" data-cerrar>Cerrar</button>${vs.length>1?'<button class="btn primary" data-mc-all>Copiar todos</button>':''}</div>`});
+  const el=modal({titulo:'Mensaje de cobro',ancho:640,sub:`${vs.length} cliente${vs.length===1?'':'s'} · a cobrar ${money(tot)}`,body:`<div class="mc-list">${vs.map((v,i)=>{const c=CLI[v.clienteId]||{};return`<div class="mc" data-i="${i}"><div class="mc-h"><div><b>${esc(nombreCli(v.clienteId))}</b>${telHtml(v)}</div><span class="dim num">${money(debeDe(v))}</span></div><textarea rows="12" data-mc="${v.id}">${esc(mensajeCobro(v,'embalar'))}</textarea><div class="mc-b"><button type="button" class="btn sm" data-mc-copy="${v.id}">${IC_COPY}Copiar mensaje</button>${linkWhatsApp(c.telefono)?`<button type="button" class="btn sm primary" data-mc-wa="${v.id}">Enviar por WhatsApp</button>`:'<span class="dim" style="font-size:12.5px">Sin teléfono válido para WhatsApp</span>'}</div></div>`}).join('')}</div>`,foot:`<span class="msg"></span><div style="display:flex;gap:8px;margin-left:auto"><button class="btn" data-cerrar>Cerrar</button>${vs.length>1?'<button class="btn primary" data-mc-all>Copiar todos</button>':''}</div>`});
   const txt=id=>$('[data-mc="'+id+'"]',el).value;
   el.addEventListener('click',async e=>{
     const c=e.target.closest('[data-mc-copy]');if(c){const ok=await copiarTexto(txt(c.dataset.mcCopy));if(ok)marcarCopiado(c);else toast('No se pudo copiar: seleccionalo y copialo a mano.',true);return}
