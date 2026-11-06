@@ -1802,6 +1802,23 @@ body table.cards tr.ph-pro[data-sw] td.pro-b .eic{position:absolute;right:12px;t
 }
 /* el encabezado de las tablas (Fecha, Cliente…) no sigue al bajar */
 #view table thead th,#view table thead{position:static!important;top:auto!important}
+/* botón de aviso por WhatsApp en la ficha de la venta */
+.wpp-av{display:flex;align-items:center;gap:12px;margin:14px 0 4px;padding:12px 14px;border-radius:16px;background:color-mix(in srgb,#25D366 14%,var(--panel));border:1px solid color-mix(in srgb,#25D366 45%,transparent);color:var(--text);text-decoration:none;-webkit-tap-highlight-color:transparent;transition:transform .12s,background-color .15s}
+.wpp-av>svg{flex:none;width:36px;height:36px;padding:8px;border-radius:50%;background:#25D366;color:#fff}
+.wpp-av span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.wpp-av b{font-size:14.5px}.wpp-av small{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wpp-av i{font-style:normal;font-size:22px;color:var(--dim)}
+.wpp-av:active{transform:scale(.98)}a.wpp-av:hover{background:color-mix(in srgb,#25D366 22%,var(--panel))}
+.wpp-av.off{background:var(--panel-2);border-color:var(--border)}.wpp-av.off>svg{background:var(--dim)}
+/* nota / aclaración de la venta, destacada */
+.nota-dest{display:block;margin:0;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,#f5a524 16%,var(--panel));border:1px solid color-mix(in srgb,#f5a524 50%,transparent);border-left:4px solid #f5a524;color:var(--text);font-size:14.5px;font-weight:600;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
+.nota-dest b{display:block;font:800 10.5px var(--sans);letter-spacing:.6px;text-transform:uppercase;color:#b7791f;margin-bottom:2px}
+:root[data-theme="dark"] .nota-dest b{color:#f5c060}
+.nota-dest.grande{margin:14px 0 4px;font-size:16px;padding:12px 14px}
+table.cards td.pro-nota{display:none}
+@media (max-width:700px){
+ body table.cards tr.ph-pro[data-sw] td.pro-nota{display:block!important;order:3;padding:8px 62px 0 14px!important;grid-area:auto}
+ body table.cards tr.ph-pro[data-sw] td[data-l="Estado"]{order:4}
+}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -2509,7 +2526,7 @@ VIEWS.produccion=()=>{
   base.forEach(v=>(v.items||[]).forEach(i=>{const n=nombreProd(i.productoId);if(!n)return;const c=i.color||'sin color',k=n+'||'+c,p=PRO[i.productoId],cant=qEt(v,i,s);if(cant<=0)return;(tot[k]=tot[k]||{n,c,q:0}).q+=cant;if(p&&p.esAccesorio)ac.a+=cant;else ac.p+=cant}));
   const lista=Object.values(tot).sort((x,y)=>y.q-x.q||x.n.localeCompare(y.n));
   const resumen=`<div class="tcard" style="margin-top:16px;padding:18px 20px"><h3 style="margin:0 0 4px;font-size:15px">${s==='embalar'?'Total a embalar':'Total a fabricar'}</h3><p class="dim" style="margin:0 0 12px;font-size:12.5px">Unidades pendientes de los pedidos de la lista, por producto y color.</p>${lista.length?`<ul class="res-list">${lista.map(x=>`<li><b>${x.q}</b> ${esc(x.n)} <span class="dim">— ${esc(x.c)}</span></li>`).join('')}</ul><p class="dim" style="margin:12px 0 0;font-size:13px">Total <b style="color:var(--text)">${ac.p}</b> producto${ac.p===1?'':'s'} y <b style="color:var(--text)">${ac.a}</b> accesorio${ac.a===1?'':'s'}</p>`:'<div class="dim">Nada para resumir.</div>'}</div>`;
-  const fila=v=>{const c=colorProducto(nomPrincipal(v));return`<tr class="click ph-pro ${c?'pcg':''}" data-act="verVenta" data-id="${v.id}" data-sw="avanzar" data-e="${s}" data-swl="✓ ${SIG_TXT[s]}" style="${c?`--pc:${c}`:''}">${chkCelda('produccion',v.id)}${proHead(v,s)}<td data-l="Fecha" class="nw">${fmtF(v.fecha)}</td><td data-l="Estado">${s==='fabricar'?estadoEspera(v):'<span class="pill ok">Fabricado</span>'}</td><td class="main"><b>${esc(nombreCli(v.clienteId))}</b></td><td class="pro-b s-ph"><button type="button" class="eic eic-ok" data-act="avanzar" data-e="${s}" data-id="${v.id}" aria-label="${SIG_TXT[s]}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button></td><td data-l="Pedido"><div class="plist">${itemsEtapa(v,s)}</div>${progHtml(v,true)}</td><td data-l="Color">${puntosColor(v)}</td><td data-l="Notas" class="notas-c">${v.notas?esc(v.notas):'<span class="dim">—</span>'}</td>${s==='embalar'?`<td data-l="Debe" class="r nw">${debeDe(v)>0?`<b class="num">${money(debeDe(v))}</b>`:'<span class="pill ok">Saldada</span>'}</td>`:''}<td data-l=""><div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="${s}" data-id="${v.id}">${SIG_TXT[s]}</button>${menuMas([...(s==='embalar'&&debeDe(v)>0?[{act:'msgCobro',id:v.id,t:'Mensaje de cobro'}]:[]),{act:'verVenta',id:v.id,t:'Ver venta'}])}</div></td></tr>`};
+  const fila=v=>{const c=colorProducto(nomPrincipal(v));return`<tr class="click ph-pro ${c?'pcg':''}" data-act="verVenta" data-id="${v.id}" data-sw="avanzar" data-e="${s}" data-swl="✓ ${SIG_TXT[s]}" style="${c?`--pc:${c}`:''}">${chkCelda('produccion',v.id)}${proHead(v,s)}<td data-l="Fecha" class="nw">${fmtF(v.fecha)}</td><td data-l="Estado">${s==='fabricar'?estadoEspera(v):'<span class="pill ok">Fabricado</span>'}</td><td class="main"><b>${esc(nombreCli(v.clienteId))}</b></td><td class="pro-b s-ph"><button type="button" class="eic eic-ok" data-act="avanzar" data-e="${s}" data-id="${v.id}" aria-label="${SIG_TXT[s]}"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button></td><td data-l="Pedido"><div class="plist">${itemsEtapa(v,s)}</div>${progHtml(v,true)}</td>${v.notas?`<td class="pro-nota s-ph"><div class="nota-dest"><b>Nota</b>${esc(v.notas)}</div></td>`:''}<td data-l="Color">${puntosColor(v)}</td><td data-l="Notas" class="notas-c">${v.notas?esc(v.notas):'<span class="dim">—</span>'}</td>${s==='embalar'?`<td data-l="Debe" class="r nw">${debeDe(v)>0?`<b class="num">${money(debeDe(v))}</b>`:'<span class="pill ok">Saldada</span>'}</td>`:''}<td data-l=""><div class="fact-cell"><button class="btn primary sm mut row" data-act="avanzar" data-e="${s}" data-id="${v.id}">${SIG_TXT[s]}</button>${menuMas([...(s==='embalar'&&debeDe(v)>0?[{act:'msgCobro',id:v.id,t:'Mensaje de cobro'}]:[]),{act:'verVenta',id:v.id,t:'Ver venta'}])}</div></td></tr>`};
   return head('Producir','Producción','Pedidos ordenados del más antiguo al más nuevo. Avanzá cada uno cuando esté listo.')+
   `<div class="toolbar" data-tab="${s}">${buscador('produccion','Buscar cliente o producto…')}${segHtml('produccion',[['fabricar','Por fabricar',a.length],['embalar','Para embalar',b.length]])}${ordSel(clv,COLS)}</div>
   ${s==='fabricar'&&atras?`<div class="banner-falta" style="margin-bottom:12px"><span class="bf-ic">⚠</span><span><b>${atras}</b> pedido${atras===1?'':'s'} con 4 semanas o más de espera</span></div>`:''}
@@ -2709,6 +2726,21 @@ function formVenta(id,cliId,itemsIni){
   $('[data-guardar]',el).onclick=()=>guardarVenta(false);
   const gp=$('[data-guardar-pago]',el);if(gp)gp.onclick=()=>guardarVenta(true);
 }
+/* aviso por WhatsApp cuando el pedido ya está fabricado y se está embalando */
+function mensajeEmbalado(v){
+  const c=CLI[v.clienteId]||{},nom=String(c.nombre||nombreCli(v.clienteId)||'').trim().split(/\s+/)[0]||'';
+  const q=uMain(v,'embalar'),parcial=totMain(v)>1&&q>0&&q<totMain(v);
+  const prod=parcial?itemsEtapaTxt(v,'embalar'):itemsTxt(v),d=debeDe(v);
+  return`¡Hola${nom?' '+nom:''}! Te escribimos de MerPro Equipamientos. Tu pedido (${prod}) ya está fabricado y lo estamos embalando para despacharlo${v.transportista?' por '+v.transportista:''}.`+
+    (d>0?` Te recordamos que queda un saldo de ${money(d)} para completar antes del envío.`:'')+` ¡Gracias por tu compra!`;
+}
+function avisoWpp(v){
+  if(esCancelada(v)||!(etapa(v)==='embalar'||uMain(v,'embalar')>0))return'';
+  const c=CLI[v.clienteId]||{},url=linkWhatsApp(c.telefono,mensajeEmbalado(v));
+  const ic='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.5L3 21l2-5.5A8.4 8.4 0 1 1 21 11.5z"/><path d="M9 9.5c.3 1.6 1.9 3.4 3.6 4.2l1.2-1.1 2 .9c-.2 1-1 1.6-2 1.6-3 0-6.2-3.2-6.2-6.2 0-1 .6-1.8 1.6-2l.9 2z"/></svg>';
+  if(!url)return`<div class="wpp-av off">${ic}<span><b>Avisar por WhatsApp</b><small>${c.telefono?'El teléfono del cliente no tiene un formato válido.':'El cliente no tiene teléfono cargado.'}</small></span>${W()?`<button type="button" class="btn sm" data-act="editCliente" data-id="${v.clienteId}">Cargar</button>`:''}</div>`;
+  return`<a class="wpp-av" href="${url}" target="_blank" rel="noopener" data-stop>${ic}<span><b>Avisar por WhatsApp</b><small>"Tu pedido ya está fabricado y lo estamos embalando…"</small></span><i aria-hidden="true">›</i></a>`;
+}
 function ventaPanel(id){
   const v=VEN[id];if(!v)return;panelFn=()=>ventaPanel(id);
   $$('#layer .drawer-back').forEach(x=>x.remove());
@@ -2718,6 +2750,8 @@ function ventaPanel(id){
   const imp=v.etiquetaImpresa==='si';
   modal({drawer:true,titulo:esc(nombreCli(v.clienteId)),sub:fmtF(v.fecha)+' · '+esc(itemsTxt(v)),body:`
   <div style="display:flex;gap:8px;flex-wrap:wrap">${pillE(v)}${e==='cancelada'?'':`<span class="pill ${COBRO_CLS[cobro(v)]}">${COBRO_TXT[cobro(v)]}</span>`}</div>
+  ${v.notas&&!esCancelada(v)?`<div class="nota-dest grande"><b>Nota de la venta</b>${esc(v.notas)}</div>`:''}
+  ${avisoWpp(v)}
   ${e!=='cancelada'?`<div class="sec"><h4>Proceso</h4>${totMain(v)>1?`${progHtml(v)}<div class="head-actions mut" style="margin-top:14px;flex-wrap:wrap">${['fabricar','embalar','enviar'].filter(k=>uMain(v,k)>0).map((k,n)=>`<button class="btn ${n===0?'primary':''}" data-act="avanzar" data-e="${k}" data-id="${id}">${SIG_TXT[k]} (${uMain(v,k)})</button>`).join('')}${(cnt(v,itemPrincipal(v)).fab>0)?`<button class="btn" data-act="retroceder" data-id="${id}">Volver un paso</button>`:''}</div>`:`<div class="steps">${labels.map((l,k)=>`<div class="step ${(k<i||e==='entregada')?'done':''} ${k===i?'now':''}"><i></i>${l}</div>`).join('')}</div>
     <div class="head-actions mut" style="margin-top:16px">${e!=='entregada'?`<button class="btn primary" data-act="avanzar" data-id="${id}">${SIG_TXT[e]}</button>`:''}${i>0?`<button class="btn" data-act="retroceder" data-id="${id}">Volver un paso</button>`:''}</div>`}</div>`:''}
   <div class="sec"><h4>Cobro</h4><div class="mini"><div><span>Total</span><b>${money(t)}</b></div><div><span>Cobrado</span><b style="color:var(--good)">${money(p)}</b></div><div><span>Debe</span><b style="${d>0?'color:var(--bad)':''}">${money(d)}</b></div></div>
