@@ -1939,6 +1939,21 @@ table.cards tr.ph-env button.eic.copiado svg{stroke-width:3!important}
  .back{padding-top:6px!important}
  .back .drawer{max-width:640px;margin-left:auto;margin-right:auto}
 }
+/* entrada: logo + puntos de carga (día y noche) */
+#intro.in-k-on{--lgk:linear-gradient(90deg,#6F93FF,#9BB2FF);--dk:#6F93FF}
+:root[data-theme="light"] #intro.in-k-on{--lgk:linear-gradient(90deg,#2F5BFF,#4A78FF);--dk:#2F5BFF}
+#intro .in-k{display:flex;flex-direction:column;align-items:center;gap:24px;opacity:0;transform:translateY(6px);animation:inKin .55s .05s cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes inKin{to{opacity:1;transform:none}}
+#intro .in-k .in-logo{position:relative;inset:auto;display:block;width:min(230px,58vw);aspect-ratio:600/69;background:var(--lgk)!important}
+#intro .in-dots{display:flex;gap:8px}
+#intro .in-dots i{width:7px;height:7px;border-radius:50%;background:var(--dk);opacity:.25;animation:inKd 1.1s ease-in-out infinite}
+#intro .in-dots i:nth-child(2){animation-delay:.18s}#intro .in-dots i:nth-child(3){animation-delay:.36s}
+@keyframes inKd{0%,100%{opacity:.25;transform:none}40%{opacity:1;transform:translateY(-5px)}}
+#intro.in-k-on.out{animation:inGone .55s ease forwards}
+#intro.in-k-on.out .in-k{animation:inKout .5s ease forwards}
+@keyframes inKout{from{opacity:1}to{opacity:0;transform:translateY(-6px) scale(.98)}}
+body.intro-on .sidebar,body.intro-on main,body.intro-on .abar,body.intro-on #fab{animation:inKap .6s 2.1s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes inKap{from{opacity:0;transform:translateY(10px) scale(.99)}}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -5872,7 +5887,7 @@ document.addEventListener('keydown',e=>{
   const nv=document.getElementById('nav');if(nv)nv.setAttribute('role','navigation');
 })();
 
-/* Animación de ingreso: logo + barra con ola de luz y pulso; el logo se achica y la app crece (una vez por carga) */
+/* Animación de ingreso: logo con tres puntos de carga y fundido suave a la app (una vez por carga) */
 (function(){
   try{
     if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)return;
@@ -5880,12 +5895,12 @@ document.addEventListener('keydown',e=>{
     const lg=document.querySelector('.brand-logo');if(!lg)return;
     const mk=getComputedStyle(lg).webkitMaskImage||getComputedStyle(lg).maskImage;if(!mk||mk==='none')return;
     const o=document.createElement('div');o.id='intro';o.setAttribute('aria-hidden','true');
-    o.innerHTML='<div class="in-l"><span class="in-logo"></span><div class="in-tr"><b></b></div></div>';
+    o.className='in-k-on';o.innerHTML='<div class="in-k"><span class="in-logo"></span><div class="in-dots"><i></i><i></i><i></i></div></div>';
     o.querySelector('.in-logo').style.cssText='-webkit-mask-image:'+mk+';mask-image:'+mk;
     document.body.appendChild(o);document.body.classList.add('intro-on');
-    o.addEventListener('click',()=>{o.classList.add('out');setTimeout(()=>{o.remove();document.body.classList.remove('intro-on')},1300)});
-    setTimeout(()=>o.classList.add('out'),2500);
-    setTimeout(()=>{o.remove();document.body.classList.remove('intro-on')},3800);
+    o.style.pointerEvents='auto';o.addEventListener('click',()=>{o.classList.add('out');setTimeout(()=>{o.remove();document.body.classList.remove('intro-on')},560)});
+    setTimeout(()=>o.classList.add('out'),2100);
+    setTimeout(()=>{o.remove();document.body.classList.remove('intro-on')},2800);
   }catch(e){}
 })();
 
