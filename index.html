@@ -4526,8 +4526,8 @@ function corEnviar(){
       const r=await apiPost(p);
       if(r.ocupado)pr.terminar('aviso','El servidor está ocupado. Probá de nuevo en unos segundos.');
       else if(tipo==='24h'&&r.sinNovedades)pr.terminar('info','No hubo ventas ni pagos nuevos en las últimas 24 horas.');
-      else if(tipo==='24h')pr.terminar('exito',`Resumen enviado a ${r.destino}: ${r.ventas} venta${r.ventas===1?'':'s'} y ${r.pagos} pago${r.pagos===1?'':'s'}.`);
-      else pr.terminar('exito',`${info.nombre} enviado a ${r.destino}.`+(r.filas===0?' (No había movimientos en ese período.)':''));
+      else if(tipo==='24h')pr.terminar('exito',`Resumen enviado a ${r.destino}: ${r.ventas} venta${r.ventas===1?'':'s'} y ${r.pagos} pago${r.pagos===1?'':'s'}.`,r.desde?{detalle:'Enviado desde '+r.desde}:undefined);
+      else pr.terminar('exito',`${info.nombre} enviado a ${r.destino}.`+(r.filas===0?' (No había movimientos en ese período.)':''),r.desde?{detalle:'Enviado desde '+r.desde}:undefined);
     }catch(err){pr.terminar('error','No se pudo enviar el reporte.',{detalle:err.message})}
   };
 }
