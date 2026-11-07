@@ -1954,6 +1954,17 @@ table.cards tr.ph-env button.eic.copiado svg{stroke-width:3!important}
 @keyframes inKout{from{opacity:1}to{opacity:0;transform:translateY(-6px) scale(.98)}}
 body.intro-on .sidebar,body.intro-on main,body.intro-on .abar,body.intro-on #fab{animation:inKap .6s 2.1s cubic-bezier(.2,.8,.2,1) backwards}
 @keyframes inKap{from{opacity:0;transform:translateY(10px) scale(.99)}}
+.bk-deb{color:#b45309!important;font-weight:600}.bk-deb b{color:#b45309!important}
+:root[data-theme="dark"] .bk-deb,:root[data-theme="dark"] .bk-deb b{color:#fbbf24!important}
+.sw-bar .x{flex:none;font-style:normal;font-size:20px;line-height:1;color:var(--dim);cursor:pointer;padding:2px 4px}
+@media (min-width:701px) and (pointer:fine),(min-width:701px) and (min-height:501px),(min-width:701px) and (orientation:portrait){
+ .sw-bar{left:50%;right:auto;width:min(480px,calc(100% - 32px));bottom:28px;transform:translate(-50%,14px)}
+ .sw-bar.on{transform:translate(-50%,0)}
+}
+tr.sw-warn>td{background:color-mix(in srgb,#f5a524 16%,transparent)!important;transition:background-color .2s}
+input[type="date"]::-webkit-calendar-picker-indicator{display:none!important;-webkit-appearance:none}
+input[type="date"]{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b909a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='5' width='17' height='15' rx='2.5'/%3E%3Cpath d='M3.5 10h17M8 3v4M16 3v4'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 12px center!important;background-size:18px!important;padding-right:40px!important}
+input[type="date"]::-webkit-inner-spin-button,input[type="date"]::-webkit-clear-button{display:none}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -4959,13 +4970,19 @@ function barraLote(k,arr,etapaOk,txt,cobro){
   const s=selDe(k),ids=arr.filter(v=>s[v.id]).map(v=>v.id);
   if(!W()||!arr.length)return'';
   if(!ids.length)return`<div class="selall"><button class="btn sm" data-act="selTodo" data-k="${k}">Seleccionar todos (${arr.length})</button></div>`;
-  const deb=cobro?ids.reduce((q,id)=>q+Math.max(0,debeDe(VEN[id])),0):0;
-  return`<div class="bulk"><b>${ids.length} seleccionado${ids.length===1?'':'s'}</b>${cobro?`<span class="bk-cob">A cobrar: <b class="num">${money(deb)}</b></span>`:''}<span class="sp"></span>${cobro&&deb>0?`<button class="btn" data-act="msgCobroSel" data-k="${k}">Generar mensaje</button>`:''}<button class="btn" data-act="selLimpiar" data-k="${k}">Limpiar</button><button class="btn primary" data-act="loteAvanzar" data-k="${k}" data-e="${etapaOk}">${esc(txt)} (${ids.length})</button></div>`;
+  const deb=(cobro||etapaOk==='enviar')?ids.reduce((q,id)=>q+Math.max(0,debeDe(VEN[id])),0):0,nDeb=etapaOk==='enviar'?ids.filter(id=>debeDe(VEN[id])>0).length:0;
+  return`<div class="bulk"><b>${ids.length} seleccionado${ids.length===1?'':'s'}</b>${cobro?`<span class="bk-cob">A cobrar: <b class="num">${money(deb)}</b></span>`:''}${nDeb?`<span class="bk-cob bk-deb">⚠ ${nDeb} con saldo · <b class="num">${money(deb)}</b></span>`:''}<span class="sp"></span>${cobro&&deb>0?`<button class="btn" data-act="msgCobroSel" data-k="${k}">Generar mensaje</button>`:''}<button class="btn" data-act="selLimpiar" data-k="${k}">Limpiar</button><button class="btn primary" data-act="loteAvanzar" data-k="${k}" data-e="${etapaOk}">${esc(txt)} (${ids.length})</button></div>`;
 }
+let s0Deb=null;
 async function loteAvanzar(k,e){
   const s=selDe(k),ids=Object.keys(s).filter(id=>s[id]&&VEN[id]&&!esCancelada(VEN[id])&&uMain(VEN[id],e)>0);
   if(!ids.length)return;
-  if(e==='enviar'){const dd=ids.filter(id=>debeDe(VEN[id])>0).length;if(dd&&!await confirmar(`${dd} de los pedidos todavía tienen saldo por cobrar. ¿Marcar todos como entregados igual?`))return}
+  if(e==='enviar'&&!loteAvanzar._f){const con=ids.filter(id=>debeDe(VEN[id])>0);if(con.length){
+    const tot=con.reduce((q,id)=>q+debeDe(VEN[id]),0),sin=ids.filter(id=>!con.includes(id));
+    con.forEach(id=>sacudirFila(id));
+    if(sin.length){ids.length=0;ids.push(...sin);s0Deb=con}
+    swAviso({tit:`${con.length} con saldo: deben ${money(tot)}`,sub:sin.length?`Se ${sin.length===1?'marcó solo la saldada':'marcaron solo las '+sin.length+' saldadas'}. ¿Marcar también ${con.length===1?'la que debe':'las '+con.length+' que deben'}?`:'No se marcó ninguna. ¿Marcarlas igual?',btn:'Marcar igual',fn:()=>{const k2=k;ui.sel[k2]={};con.forEach(id=>ui.sel[k2][id]=true);loteAvanzar._f=1;loteAvanzar(k2,e).finally(()=>{loteAvanzar._f=0})}});
+    if(!sin.length)return}}
   const snaps=ids.map(id=>JSON.parse(JSON.stringify(VEN[id])));
   ids.forEach(id=>{const v=VEN[id];tanda(v,e,uMain(v,e));persist('Ventas','update',v.id,v)});
   ui.sel[k]={};guardarLocal();render();
@@ -5290,8 +5307,8 @@ function avanzar(id,e,fuerza){
   const v=VEN[id];if(!v||esCancelada(v))return;
   e=e||etapa(v);if(!STK[e])return;
   const pm=uMain(v,e);if(pm<=0)return;
+  if(e==='enviar'&&!fuerza&&debeDe(v)>0){sacudirFila(id);swAviso({tit:'Debe '+money(debeDe(v)),sub:'¿Marcar la entrega igual?',btn:'Marcar',fn:()=>avanzar(id,e,true)});return}
   const go=async q=>{
-    if(e==='enviar'&&!fuerza){const d=debeDe(v);if(d>0&&!await confirmar(`Esta venta todavía debe ${money(d)}. ¿Marcar la entrega igual?`))return}
     const snap=JSON.parse(JSON.stringify(v)),n=tanda(v,e,q),t=totMain(v);
     persist('Ventas','update',v.id,v);guardarLocal();render();
     deshacible(t>1?`${n} de ${t} ${LBL_ET[e]}${n===1?'':'s'}${e==='enviar'&&v.entregado==='si'?' · venta completa':''}`:ETAPA_TXT[etapa(v)],()=>restaurarVenta(snap));
@@ -5547,6 +5564,18 @@ A.exportCsv=()=>{
   $('[data-ok]',el).onclick=()=>{const rows=sel();if(!rows.length)return;el.remove();descargarCsv(E.nombre+(D.value||Hh.value?'_'+(D.value||'inicio')+'_a_'+(Hh.value||'hoy'):''),E.cols,rows)};
   upd();
 };})();
+
+/* aviso de saldo pendiente (mismo diseño en celular y computadora) */
+function sacudirFila(id){document.querySelectorAll('tr[data-id="'+id+'"]').forEach(r=>{if(!r.offsetParent)return;r.classList.remove('sw-warn');void r.offsetWidth;r.classList.add('sw-warn');setTimeout(()=>r.classList.remove('sw-warn'),900);try{r.animate([{translate:'-7px 0'},{translate:'7px 0'},{translate:'-5px 0'},{translate:'3px 0'},{translate:'0 0'}],{duration:340,easing:'ease-out'})}catch(e){}});if(navigator.vibrate)try{navigator.vibrate([18,40,18])}catch(e){}}
+function swAviso(o){
+  document.querySelectorAll('.sw-bar').forEach(x=>x.remove());
+  const b=document.createElement('div');b.className='sw-bar';b.innerHTML=`<span class="ic">⚠</span><span class="tx">${esc(o.tit)}<small>${esc(o.sub||'')}</small></span>${o.btn?`<button type="button">${esc(o.btn)}</button>`:''}<i class="x" aria-label="Cerrar">×</i>`;
+  document.body.append(b);requestAnimationFrame(()=>requestAnimationFrame(()=>b.classList.add('on')));
+  let off=0;const quitar=()=>{if(off)return;off=1;b.classList.remove('on');setTimeout(()=>b.remove(),260);document.removeEventListener('pointerdown',fuera,true)};
+  const bt=b.querySelector('button');if(bt)bt.onclick=()=>{quitar();o.fn&&o.fn()};
+  b.querySelector('.x').onclick=quitar;setTimeout(quitar,7000);
+  const fuera=ev=>{if(!b.contains(ev.target))quitar()};setTimeout(()=>document.addEventListener('pointerdown',fuera,true),400);
+}
 /* --- Desplegables propios (reemplazan el menú nativo de <select>) --- */
 (function(){
   let tAbre=0,pop=null,cur=null,hi=-1,items=[],tbuf='',ttm=0,ym=false,ymA=null;
@@ -5778,7 +5807,10 @@ async function resolverGeo(provRaw,ciudadRaw){
       else if('clr' in t.dataset)poner('')});
     document.addEventListener('keydown',onKey,true);window.addEventListener('resize',cerrar)}
   const esF=t=>t&&t.tagName==='INPUT'&&t.type==='date'&&!t.disabled&&!t.readOnly;
-  document.addEventListener('click',e=>{const t=e.target;if(esF(t)){abrir(t)}},true);
+  document.addEventListener('click',e=>{const t=e.target;if(esF(t)){e.preventDefault();abrir(t)}},true);
+  /* solo el calendario de la app: se evita que el navegador abra el suyo */
+  document.addEventListener('mousedown',e=>{const t=e.target;if(esF(t)){e.preventDefault();abrir(t)}},true);
+  document.addEventListener('touchend',e=>{const t=e.target;if(esF(t)){e.preventDefault();abrir(t)}},{capture:true,passive:false});
   document.addEventListener('mousedown',e=>{if(pop&&!pop.contains(e.target)&&e.target!==inp)cerrar()},true);
   document.addEventListener('keydown',e=>{if(pop||!esF(e.target))return;if(e.key==='ArrowDown'&&e.altKey){e.preventDefault();abrir(e.target)}},true);
   document.addEventListener('input',e=>{if(pop&&e.target===inp&&modo==='d'){const v=inp.value;if(/^\d{4}-\d{2}-\d{2}$/.test(v)){vy=+v.slice(0,4);vm=+v.slice(5,7)-1}pintar()}},true);
