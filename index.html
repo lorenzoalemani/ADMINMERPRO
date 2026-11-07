@@ -1972,7 +1972,7 @@ input[type="date"]::-webkit-inner-spin-button,input[type="date"]::-webkit-clear-
 .nota-band{display:flex;align-items:flex-start;gap:8px;padding:9px 14px;background:color-mix(in srgb,#f5a524 16%,var(--panel));border-bottom:1px solid color-mix(in srgb,#f5a524 40%,transparent);color:#7a4a00;font:700 14.5px/1.35 var(--sans);white-space:pre-wrap;overflow-wrap:anywhere}
 :root[data-theme="dark"] .nota-band{color:#f7c873}
  .nota-band svg{flex:none;width:17px;height:17px;margin-top:1px;fill:none;stroke:#d97706;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-body.rol-fab .sidebar,body.rol-fab .abar,body.rol-fab #fab,body.rol-fab #btnSearch,body.rol-fab #btnAvisos,body.rol-fab #btnConn,body.rol-fab #btnOrd,body.rol-fab #btnBack,body.rol-fab .head-actions,body.rol-fab #notiWrap .noti-x{display:none!important}
+body.rol-fab .sidebar,body.rol-fab .abar,body.rol-fab #fab,body.rol-fab #btnSearch,body.rol-fab #btnConn,body.rol-fab #btnOrd,body.rol-fab #btnBack,body.rol-fab .head-actions,body.rol-fab #notiWrap .noti-x{display:none!important}
 body.rol-fab main{margin-left:0!important;max-width:980px;margin-right:auto!important;margin-left:auto!important;padding-bottom:110px!important}
 .fab-seg{display:flex;margin:0 0 14px;max-width:520px}.fab-seg button{flex:1}.fab-seg b{font-family:var(--mono);font-weight:600;opacity:.7;margin-left:4px}
 .fab-sum{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:12px 14px;margin-bottom:12px}.fab-sum small{font:700 10.5px var(--sans);letter-spacing:.6px;color:var(--dim)}
@@ -2014,6 +2014,9 @@ body.rol-fab main{margin-left:0!important;max-width:980px;margin-right:auto!impo
 @media (max-width:700px),(pointer:coarse) and (max-height:500px) and (orientation:landscape){
  .fab-sum div{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-14px;margin-right:-14px;padding:0 14px 2px}.fab-sum div::-webkit-scrollbar{display:none}.fab-sum span{flex:none}
 }
+.fab-c.fab-nuevo{animation:fabNuevo 1.8s ease-out}
+@keyframes fabNuevo{0%,30%{box-shadow:0 0 0 3px #16a34a,0 10px 30px -8px rgba(22,163,74,.5)}100%{box-shadow:0 1px 2px rgba(16,19,26,.04),0 6px 18px rgba(16,19,26,.05)}}
+body.rol-fab #avPop .av-h [data-av="notas"],body.rol-fab #avPop .av-f{display:none}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -6675,7 +6678,7 @@ function vistaFabrica(){
   if(tab==='fabricar'){
     body=(tot.length?`<div class="fab-sum"><small>TOTAL A FABRICAR</small><div>${tot.map(x=>`<span><i style="background:${colorHexDe(x.color)}"></i><b>${x.q}</b> ${esc(nombreProd(x.productoId))}${x.color?` · ${esc(x.color)}`:''}</span>`).join('')}</div></div>`:'')+
     (vs.length?`<div class="fab-list">${vs.map(v=>{const ip=itemPrincipal(v),col=ip&&ip.color?String(ip.color).trim():'',h=colorHexDe(col),n=parseInt(h.slice(1),16),L=(.299*(n>>16)+.587*((n>>8)&255)+.114*(n&255))/255;
-      return`<div class="fab-c"><div class="fab-h" style="--tc:${h};--tt:${L>.68?'#11151c':'#fff'}"><span><i></i>${esc((col||'Sin color').toUpperCase())}</span><span>${uMain(v,'fabricar')} u.</span></div>${v.notas?`<div class="nota-band"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>${esc(v.notas)}</span></div>`:''}<div class="fk-b"><b>${esc(nombreCli(v.clienteId))}</b><div class="plist">${itemsEtapa(v,'fabricar')}</div>${estadoEspera(v)}</div></div>`}).join('')}</div>`:vacio('No hay pedidos por fabricar','Cuando entren pedidos nuevos aparecen acá.',''));
+      return`<div class="fab-c" data-vid="${v.id}"><div class="fab-h" style="--tc:${h};--tt:${L>.68?'#11151c':'#fff'}"><span><i></i>${esc((col||'Sin color').toUpperCase())}</span><span>${uMain(v,'fabricar')} u.</span></div>${v.notas?`<div class="nota-band"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><span>${esc(v.notas)}</span></div>`:''}<div class="fk-b"><b>${esc(nombreCli(v.clienteId))}</b><div class="plist">${itemsEtapa(v,'fabricar')}</div>${estadoEspera(v)}</div></div>`}).join('')}</div>`:vacio('No hay pedidos por fabricar','Cuando entren pedidos nuevos aparecen acá.',''));
   }else{
     body=mias.length?`<div class="fab-mis">${mias.map(f=>{const tq=f.items.reduce((s,i)=>s+Number(i.cantidad||0),0),ta=f.items.reduce((s,i)=>s+Math.min(Number(i.cantidad||0),Number(i.asignado||0)),0),ok=f.estado==='asignado'||ta>=tq;
       return`<div class="fab-mi"><div class="fab-mi-h"><b>${fmtF(f.fecha)}</b><span class="pill ${ok?'ok':ta?'warn':''}">${ok?'✓ Asignado':ta?`Asignado ${ta} de ${tq}`:'Pendiente'}</span></div>${f.items.map(i=>`<div class="fab-mi-i"><i style="background:${colorHexDe(i.color)}"></i><b>${i.cantidad}×</b> ${esc(nombreProd(i.productoId))}${i.color?` <span class="dim">· ${esc(i.color)}</span>`:''}</div>`).join('')}${f.nota?`<div class="dim fab-mi-n">${esc(f.nota)}</div>`:''}</div>`}).join('')}</div>`:vacio('Todavía no cargaste nada','Cuando termines productos, tocá "Cargar listos para retirar".','');
@@ -6753,6 +6756,16 @@ Object.assign(A,{fabTab:d=>{ui.fabTab=d.v;render()},fabCargar:()=>fabCargarModal
   r.G.unshift({g:'Fábrica',r:'listos para retirar',it});r.total+=it.filter(x=>x.u).length;return r}}
 document.addEventListener('click',e=>{const b=e.target.closest('#avPop [data-av="go"][data-a="fab"]');if(!b)return;e.stopPropagation();e.preventDefault();const rd=new Set(avLeer(AVR,[]));rd.add(b.dataset.key);avGuardar(AVR,[...rd].slice(-400));try{avCerrar();avBadge()}catch(_){}
   ir('produccion');setTimeout(()=>fabAsignarModal(b.dataset.id),60)},true);
+
+/* campanita de la cuenta Fábrica: solo pedidos nuevos para fabricar */
+{const _av2=avisos;avisos=function(){if(ROL!=='fabrica')return _av2.apply(this,arguments);
+  const feed=avLeer(AVF,[]),rd=new Set(avLeer(AVR,[])),cuando=ts=>{const h=(Date.now()-ts)/36e5;return h<1?'hace instantes':h<24?'hace '+Math.floor(h)+' h':new Date(ts).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})};
+  const it=feed.filter(f=>f.k==='v'&&VEN[f.a]&&!esCancelada(VEN[f.a])&&uMain(VEN[f.a],'fabricar')>0).slice(0,20).map(f=>{const v=VEN[f.a],ip=itemPrincipal(v),col=ip&&ip.color?' · '+ip.color:'';
+    const x={i:'s',k:'e',t:'Nuevo a fabricar · '+nombreCli(v.clienteId),d:itemsEtapaTxt(v,'fabricar')+col+(v.notas?' · 📝 '+String(v.notas).slice(0,40):'')+' · '+cuando(f.ts),a:'feed',id:f.a,key:'f:'+f.id};x.u=!rd.has(x.key);return x});
+  const G=it.length?[{g:'A fabricar',r:'pedidos nuevos',it}]:[];return{G,total:it.filter(x=>x.u).length}}}
+document.addEventListener('click',e=>{if(ROL!=='fabrica')return;const b=e.target.closest('#avPop [data-av="go"][data-a="feed"]');if(!b)return;e.stopPropagation();e.preventDefault();
+  const rd=new Set(avLeer(AVR,[]));rd.add(b.dataset.key);avGuardar(AVR,[...rd].slice(-400));try{avCerrar();avBadge()}catch(_){}
+  ui.fabTab='fabricar';render();setTimeout(()=>{const c=document.querySelector('.fab-c[data-vid="'+b.dataset.id+'"]');if(!c)return;c.scrollIntoView({behavior:'smooth',block:'center'});c.classList.remove('fab-nuevo');void c.offsetWidth;c.classList.add('fab-nuevo')},80)},true);
 /* ================= Arranque ================= */
 $('#btnMenu').onclick=()=>$('#sidebar').classList.toggle('open');
 $('#btnSearch').onclick=()=>A.buscar();
