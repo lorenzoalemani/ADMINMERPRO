@@ -3923,19 +3923,71 @@ function etqBloque(texto, x, maxW, grande, chico, y1, y2l1, y2l2){
   }
 }
 // Diseño 10 x 15 cm (una etiqueta por bulto). Cada campo se escribe debajo de su título.
+/* Generador de QR (modo byte, corrección M, versiones 1–10) */
+function qrMatriz(txt,nivel){
+  const bytes=[...new TextEncoder().encode(txt)],H=nivel==='H';
+  const ECC=H?[0,17,28,22,16,22,28,26,26,24,28]:[0,10,16,26,18,24,16,18,22,22,26],NB=H?[0,1,1,2,4,4,4,5,6,8,8]:[0,1,1,1,2,2,4,4,4,5,5],FB=H?2:0;
+  const raw=v=>{let r=(16*v+128)*v+64;if(v>=2){const n=Math.floor(v/7)+2;r-=(25*n-10)*n-55;if(v>=7)r-=36}return r};
+  const cap=v=>Math.floor(raw(v)/8)-ECC[v]*NB[v];
+  let ver=1;for(;ver<=10;ver++){if(4+(ver<10?8:16)+bytes.length*8<=cap(ver)*8)break}
+  if(ver>10)throw new Error('Texto muy largo para el QR');
+  const bits=[],put=(val,n)=>{for(let i=n-1;i>=0;i--)bits.push((val>>>i)&1)};
+  put(4,4);put(bytes.length,ver<10?8:16);bytes.forEach(b=>put(b,8));
+  const dc=cap(ver);put(0,Math.min(4,dc*8-bits.length));put(0,(8-bits.length%8)%8);
+  const data=[];for(let i=0;i<bits.length;i+=8){let b=0;for(let j=0;j<8;j++)b=b<<1|bits[i+j];data.push(b)}
+  for(let p=0xEC;data.length<dc;p^=0xEC^0x11)data.push(p);
+  /* Reed-Solomon */
+  const mul=(x,y)=>{let z=0;for(let i=7;i>=0;i--){z=(z<<1)^((z>>>7)*0x11D);z^=((y>>>i)&1)*x}return z&255};
+  const div=(d)=>{const r=new Array(d).fill(0);r[d-1]=1;let root=1;for(let i=0;i<d;i++){for(let j=0;j<r.length;j++){r[j]=mul(r[j],root);if(j+1<r.length)r[j]^=r[j+1]}root=mul(root,2)}return r};
+  const rem=(dat,dv)=>{const r=dv.map(()=>0);dat.forEach(b=>{const f=b^r.shift();r.push(0);dv.forEach((c,i)=>r[i]^=mul(c,f))});return r};
+  const nb=NB[ver],el=ECC[ver],rc=Math.floor(raw(ver)/8),ns=nb-rc%nb,sl=Math.floor(rc/nb),dv=div(el),blocks=[];
+  for(let i=0,k=0;i<nb;i++){const n=sl-el+(i<ns?0:1),d=data.slice(k,k+n);k+=n;const e=rem(d,dv);if(i<ns)d.push(0);blocks.push(d.concat(e))}
+  const cw=[];for(let i=0;i<blocks[0].length;i++)blocks.forEach((b,j)=>{if(i!==sl-el||j>=ns)cw.push(b[i])});
+  /* módulos */
+  const S=ver*4+17,M=[...Array(S)].map(()=>Array(S).fill(false)),F=[...Array(S)].map(()=>Array(S).fill(false));
+  const set=(x,y,v)=>{M[y][x]=v;F[y][x]=true};
+  for(let i=0;i<S;i++){set(6,i,i%2===0);set(i,6,i%2===0)}
+  [[3,3],[S-4,3],[3,S-4]].forEach(([x,y])=>{for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const d=Math.max(Math.abs(dx),Math.abs(dy)),xx=x+dx,yy=y+dy;if(xx>=0&&xx<S&&yy>=0&&yy<S)set(xx,yy,d!==2&&d!==4)}});
+  if(ver>1){const n=Math.floor(ver/7)+2,st=Math.ceil((ver*4+4)/(n*2-2))*2,pos=[6];for(let p=S-7;pos.length<n;p-=st)pos.splice(1,0,p);
+    pos.forEach((a,i)=>pos.forEach((b,j)=>{if((i===0&&j===0)||(i===0&&j===n-1)||(i===n-1&&j===0))return;for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++)set(a+dx,b+dy,Math.max(Math.abs(dx),Math.abs(dy))!==1)}))}
+  const fmt=(mask)=>{const d=(FB<<3)|mask;let r=d;for(let i=0;i<10;i++)r=(r<<1)^((r>>>9)*0x537);const b=((d<<10)|r)^0x5412,g=i=>((b>>>i)&1)===1;
+    for(let i=0;i<=5;i++)set(8,i,g(i));set(8,7,g(6));set(8,8,g(7));set(7,8,g(8));for(let i=9;i<15;i++)set(14-i,8,g(i));
+    for(let i=0;i<8;i++)set(S-1-i,8,g(i));for(let i=8;i<15;i++)set(8,S-15+i,g(i));set(8,S-8,true)};
+  fmt(0);
+  if(ver>=7){let r=ver;for(let i=0;i<12;i++)r=(r<<1)^((r>>>11)*0x1F25);const b=ver<<12|r;for(let i=0;i<18;i++){const v=((b>>>i)&1)===1,a=S-11+i%3,c=Math.floor(i/3);set(a,c,v);set(c,a,v)}}
+  let i=0;for(let r=S-1;r>=1;r-=2){if(r===6)r=5;for(let v=0;v<S;v++)for(let j=0;j<2;j++){const x=r-j,up=((r+1)&2)===0,y=up?S-1-v:v;if(!F[y][x]&&i<cw.length*8){M[y][x]=((cw[i>>>3]>>>(7-(i&7)))&1)===1;i++}}}
+  const MK=[(x,y)=>(x+y)%2===0,(x,y)=>y%2===0,(x,y)=>x%3===0,(x,y)=>(x+y)%3===0,(x,y)=>(Math.floor(x/3)+Math.floor(y/2))%2===0,(x,y)=>x*y%2+x*y%3===0,(x,y)=>(x*y%2+x*y%3)%2===0,(x,y)=>((x+y)%2+x*y%3)%2===0];
+  const ap=k=>{for(let y=0;y<S;y++)for(let x=0;x<S;x++)if(!F[y][x]&&MK[k](x,y))M[y][x]=!M[y][x]};
+  const pen=()=>{let p=0,dark=0;for(let y=0;y<S;y++){let rx=1,ry=1;for(let x=0;x<S;x++){if(M[y][x])dark++;if(x>0){if(M[y][x]===M[y][x-1]){rx++;if(rx===5)p+=3;else if(rx>5)p++}else rx=1;if(M[x][y]===M[x-1][y]){ry++;if(ry===5)p+=3;else if(ry>5)p++}else ry=1}
+      if(x<S-1&&y<S-1&&M[y][x]===M[y][x+1]&&M[y][x]===M[y+1][x]&&M[y][x]===M[y+1][x+1])p+=3}}
+    p+=Math.floor(Math.abs(dark*20-S*S*10)/(S*S))*10;return p};
+  let best=0,bp=1e9;for(let k=0;k<8;k++){ap(k);fmt(k);const q=pen();if(q<bp){bp=q;best=k}ap(k)}
+  ap(best);fmt(best);return M;
+}
+/* QR como SVG (rectángulos), en la posición y tamaño pedidos */
+function qrSvg(txt,x,y,size,color,nivel,estilo){const M=qrMatriz(txt,nivel),n=M.length,q=size/(n+2);let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(M[r][c]){const px=x+(c+1)*q,py=y+(r+1)*q,fin=(r<7&&c<7)||(r<7&&c>=n-7)||(r>=n-7&&c<7);if(estilo==='p'&&!fin){const rr=q*.46;d+=`M${(px+q/2-rr).toFixed(2)} ${(py+q/2).toFixed(2)}a${rr.toFixed(2)} ${rr.toFixed(2)} 0 1 0 ${(2*rr).toFixed(2)} 0a${rr.toFixed(2)} ${rr.toFixed(2)} 0 1 0 -${(2*rr).toFixed(2)} 0z`}else d+=`M${px.toFixed(2)} ${py.toFixed(2)}h${q.toFixed(2)}v${q.toFixed(2)}h-${q.toFixed(2)}z`}return`<path d="${d}" fill="${color||'#000'}" shape-rendering="crispEdges"/>`}
+
+
+/* QR al WhatsApp del destinatario: celda a la derecha de Documento y Teléfono */
+function etqQr(d){
+  const u=typeof linkWhatsApp==='function'?linkWhatsApp(d.tel):'';if(!u)return'';
+  const X0=196,Y0=125.5,X1=275.75,Y1=210.4;
+  let q='';try{q=qrSvg(u,205.4,127.2,61,'#000')}catch(e){return''}
+  return `<rect x="${X0}" y="${Y0+0.4}" width="${X1-X0-0.3}" height="${Y1-Y0-0.8}" fill="#fff"/><line x1="${X0}" y1="${Y0}" x2="${X0}" y2="${Y1}" stroke="#000" stroke-width="0.5"/>${q}<text x="236" y="204.5" text-anchor="middle" font-family="PoppinsEtq, Poppins, sans-serif" font-weight="700" font-size="7.2" fill="#000">WHATSAPP</text>`;
+}
 function etqSvg(d, nBulto, total){
-  const X = 15.2, MAXW = 252;
+  const X = 15.2, MAXW = 252, conQr = !!(typeof linkWhatsApp==='function'&&linkWhatsApp(d.tel)), MAXQ = conQr ? 174 : MAXW;
   const t = [
     etqTexto(`${nBulto}/${total}`, 237.2, 45, 66, 20, 9, 'middle'),
     etqBloque(d.dest, X, MAXW, 20, 16, 108, 99, 119),
-    etqTexto(d.dni, X, 159.5, MAXW, 15, 8),
-    etqTexto(d.tel, X, 202, MAXW, 15, 8),
+    etqTexto(d.dni, X, 159.5, MAXQ, 15, 8),
+    etqTexto(d.tel, X, 202, MAXQ, 15, 8),
     etqBloque(d.dir, X, MAXW, 15, 10, 244.5, 238, 248.5),
     etqTexto(d.cp, X, 287, MAXW, 15, 8),
     etqTexto(d.loc, X, 329.5, MAXW, 15, 8),
     etqTexto(d.prov, X, 372, MAXW, 15, 8)
   ].join('');
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${ETQ_W} ${ETQ_H}" preserveAspectRatio="xMidYMid meet">${ETQ_SVG_INNER}${t}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${ETQ_W} ${ETQ_H}" preserveAspectRatio="xMidYMid meet">${ETQ_SVG_INNER}${conQr?etqQr(d):''}${t}</svg>`;
 }
 
 /* ---------- Pegar pedido ---------- */
