@@ -2119,12 +2119,6 @@ table.cards tr.et-enviar{background:linear-gradient(90deg,color-mix(in srgb,var(
 .prg .pe,.prg-l .pe{background:var(--st-emb)}
 .prg .pv,.prg-l .pv{background:var(--st-env)}
 .prg .pd,.prg-l .pd{background:color-mix(in srgb,var(--st-env-t) 60%,var(--text))}
-.seg button[data-k="produccion"][data-v="fabricar"] .n,.fab-seg button[data-v="fabricar"] b{background:color-mix(in srgb,var(--st-fab) 22%,transparent)!important;color:var(--st-fab-t)!important}
-.seg button[data-k="produccion"][data-v="embalar"] .n{background:color-mix(in srgb,var(--st-emb) 20%,transparent)!important;color:var(--st-emb-t)!important}
-.seg button[data-k="envios"][data-v="enviar"] .n{background:color-mix(in srgb,var(--st-env) 22%,transparent)!important;color:var(--st-env-t)!important}
-.seg button.on[data-k="produccion"][data-v="fabricar"] .n,.fab-seg button.on[data-v="fabricar"] b{background:var(--st-fab)!important;color:#1a1204!important}
-.seg button.on[data-k="produccion"][data-v="embalar"] .n{background:var(--st-emb)!important;color:#fff!important}
-.seg button.on[data-k="envios"][data-v="enviar"] .n{background:var(--st-env)!important;color:#05210f!important}
 
 /* ===================== cambios pendientes: pastilla arriba ===================== */
 .pend-pill{display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 11px 0 10px;border-radius:17px;border:0;background:color-mix(in srgb,var(--st-fab) 18%,transparent);color:var(--st-fab-t);font-weight:700;font-size:12px;line-height:1;font-family:inherit;cursor:pointer;flex:none;white-space:nowrap;animation:ppIn .35s cubic-bezier(.2,.8,.2,1)}
@@ -7039,7 +7033,7 @@ document.addEventListener('click',e=>{if(ROL!=='fabrica')return;const b=e.target
 
 /* aviso de versión nueva: si se subió un index.html nuevo, los que tienen la app abierta lo ven y actualizan con un toque
    (evita que alguien siga cargando datos con una versión vieja durante días) */
-const MP_BUILD='20261111235514';
+const MP_BUILD='20261112200157';
 (()=>{if(!/^https?:/.test(location.protocol))return;let avisado=false;
   const chequear=async()=>{if(avisado||document.hidden)return;try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/const MP_BUILD='(\d{14})'/);if(!m||m[1]===MP_BUILD||m[1]<MP_BUILD)return;
     avisado=true;const b=document.createElement('div');b.className='upd-bar';b.innerHTML='<span><b>Hay una versión nueva de MerPro</b><small>Actualizá para tener los últimos cambios.</small></span><button type="button" class="btn primary sm">Actualizar</button><button type="button" class="upd-x" aria-label="Más tarde">×</button>';
