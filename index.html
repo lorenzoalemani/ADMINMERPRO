@@ -2301,6 +2301,13 @@ select.cta-falta,.sel-btn.cta-falta{border-color:color-mix(in srgb,var(--st-fab)
 /* legibilidad: grises un poco más oscuros en tema claro y mínimo 12px en textos secundarios del celular */
 :root[data-theme="light"]{--dim:#5A6170}
 @media (max-width:700px),(pointer:coarse) and (max-height:500px) and (orientation:landscape){#view td .sub,#view .kpi .d,#view .list-row .t span,.drawer .dim,.cm-av small{font-size:max(12px,1em)}}
+/* selector de período: siempre en su propia fila en PC, así cambiar de Mes a Rango no mueve nada de lugar */
+@media (min-width:701px) and (pointer:fine),(min-width:701px) and (min-height:501px){
+ .toolbar>.prd-sel{flex:1 1 100%!important;max-width:none!important;flex-wrap:nowrap;min-height:42px}
+ .prd-sel .per-rg{flex-wrap:nowrap}
+ .prd-sel .per-f input{width:118px}
+ .prd-sel .per-pre button{padding-left:10px;padding-right:10px}
+}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -7241,7 +7248,7 @@ document.addEventListener('click',e=>{if(ROL!=='fabrica')return;const b=e.target
 
 /* aviso de versión nueva: si se subió un index.html nuevo, los que tienen la app abierta lo ven y actualizan con un toque
    (evita que alguien siga cargando datos con una versión vieja durante días) */
-const MP_BUILD='20261116165428';
+const MP_BUILD='20261117175254';
 (()=>{if(!/^https?:/.test(location.protocol))return;let avisado=false;
   const chequear=async()=>{if(avisado||document.hidden)return;try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/const MP_BUILD='(\d{14})'/);if(!m||m[1]===MP_BUILD||m[1]<MP_BUILD)return;
     avisado=true;const b=document.createElement('div');b.className='upd-bar';b.innerHTML='<span><b>Hay una versión nueva de MerPro</b><small>Actualizá para tener los últimos cambios.</small></span><button type="button" class="btn primary sm">Actualizar</button><button type="button" class="upd-x" aria-label="Más tarde">×</button>';
