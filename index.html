@@ -2301,13 +2301,19 @@ select.cta-falta,.sel-btn.cta-falta{border-color:color-mix(in srgb,var(--st-fab)
 /* legibilidad: grises un poco más oscuros en tema claro y mínimo 12px en textos secundarios del celular */
 :root[data-theme="light"]{--dim:#5A6170}
 @media (max-width:700px),(pointer:coarse) and (max-height:500px) and (orientation:landscape){#view td .sub,#view .kpi .d,#view .list-row .t span,.drawer .dim,.cm-av small{font-size:max(12px,1em)}}
-/* selector de período: siempre en su propia fila en PC, así cambiar de Mes a Rango no mueve nada de lugar */
+/* selector de período en PC: todo en una línea; Rango se elige en un desplegable, así nada cambia de tamaño */
 @media (min-width:701px) and (pointer:fine),(min-width:701px) and (min-height:501px){
- .toolbar>.prd-sel{flex:1 1 100%!important;max-width:none!important;flex-wrap:nowrap;min-height:42px}
- .prd-sel .per-rg{flex-wrap:nowrap}
- .prd-sel .per-f input{width:118px}
- .prd-sel .per-pre button{padding-left:10px;padding-right:10px}
+ .prd-sel{flex-wrap:nowrap;position:relative}
+ .prd-sel .per-nav{width:280px;flex:none}
+ .per-rgc .per-lb{flex:1;cursor:pointer;font:inherit;font-weight:650;font-size:14px;color:var(--text);justify-content:space-between}
+ .per-lb .per-car{color:var(--dim);font-size:11px;margin-left:4px}
+ .per-lb.on{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
+ .per-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:60;background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:12px;box-shadow:0 18px 40px rgba(10,15,35,.22);display:flex;flex-direction:column;gap:10px;animation:ppPop .18s cubic-bezier(.2,.8,.2,1)}
+ .per-pr{display:flex;align-items:center;gap:8px}
+ .per-pop .per-f input{width:124px}
+ .per-pop .per-pre{display:flex;width:100%}.per-pop .per-pre button{flex:1;white-space:nowrap;padding:0 10px}
 }
+@keyframes ppPop{from{opacity:0;transform:translateY(-4px)}}
 </style>
 <meta name="apple-mobile-web-app-title" content="MerPro">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -7248,7 +7254,7 @@ document.addEventListener('click',e=>{if(ROL!=='fabrica')return;const b=e.target
 
 /* aviso de versión nueva: si se subió un index.html nuevo, los que tienen la app abierta lo ven y actualizan con un toque
    (evita que alguien siga cargando datos con una versión vieja durante días) */
-const MP_BUILD='20261117175254';
+const MP_BUILD='20261117180111';
 (()=>{if(!/^https?:/.test(location.protocol))return;let avisado=false;
   const chequear=async()=>{if(avisado||document.hidden)return;try{const r=await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();const m=t.match(/const MP_BUILD='(\d{14})'/);if(!m||m[1]===MP_BUILD||m[1]<MP_BUILD)return;
     avisado=true;const b=document.createElement('div');b.className='upd-bar';b.innerHTML='<span><b>Hay una versión nueva de MerPro</b><small>Actualizá para tener los últimos cambios.</small></span><button type="button" class="btn primary sm">Actualizar</button><button type="button" class="upd-x" aria-label="Más tarde">×</button>';
@@ -7345,15 +7351,17 @@ function perHtml(extra){const p=ui.per,ma=hoy().slice(0,7),ref=p.ref||ma;
   const nextOff=p.m==='mes'?ref>=ma:p.m==='tri'?Math.floor((+ref.slice(5,7)-1)/3)>=Math.floor((+ma.slice(5,7)-1)/3)&&ref.slice(0,4)>=ma.slice(0,4)||ref.slice(0,4)>ma.slice(0,4):p.m==='anio'?ref.slice(0,4)>=ma.slice(0,4):true;
   const r=perRango();
   return`<div class="prd-sel" data-per-box><div class="seg per-seg">${[['mes','Mes'],['tri','Trimestre'],['anio','Año'],['rango','Rango']].map(o=>`<button type="button" class="${p.m===o[0]?'on':''}" data-act="perModo" data-v="${o[0]}">${o[1]}</button>`).join('')}</div>
-   ${p.m==='rango'?`<div class="per-rg"><label class="per-f">${IC_CAL}<input type="date" class="date-in" data-per="d" value="${r.d}" aria-label="Desde"></label><span class="per-a">→</span><label class="per-f">${IC_CAL}<input type="date" class="date-in" data-per="h" value="${r.h}" aria-label="Hasta"></label>${extra?`<div class="seg sm per-pre">${[3,6,12].map(n=>`<button type="button" data-act="perPre" data-v="${n}">${n} m</button>`).join('')}<button type="button" data-act="perPre" data-v="all">Todo</button></div>`:''}</div>`
+   ${p.m==='rango'&&!esMovil()?`<div class="per-nav per-rgc"><button type="button" class="per-l per-lb ${ui._perPop?'on':''}" data-act="perPop" aria-expanded="${ui._perPop?'true':'false'}">${IC_CAL}${esc(perLabel())}<span class="per-car">▾</span></button>${ui._perPop?`<div class="per-pop" role="dialog" aria-label="Elegir rango"><div class="per-pr"><label class="per-f">${IC_CAL}<input type="date" class="date-in" data-per="d" value="${r.d}" aria-label="Desde"></label><span class="per-a">→</span><label class="per-f">${IC_CAL}<input type="date" class="date-in" data-per="h" value="${r.h}" aria-label="Hasta"></label></div><div class="seg sm per-pre">${[3,6,12].map(n=>`<button type="button" data-act="perPre" data-v="${n}">Últimos ${n} meses</button>`).join('')}<button type="button" data-act="perPre" data-v="all">Todo</button></div></div>`:''}</div>`
+   :p.m==='rango'?`<div class="per-rg"><label class="per-f">${IC_CAL}<input type="date" class="date-in" data-per="d" value="${r.d}" aria-label="Desde"></label><span class="per-a">→</span><label class="per-f">${IC_CAL}<input type="date" class="date-in" data-per="h" value="${r.h}" aria-label="Hasta"></label>${extra?`<div class="seg sm per-pre">${[3,6,12].map(n=>`<button type="button" data-act="perPre" data-v="${n}">${n} m</button>`).join('')}<button type="button" data-act="perPre" data-v="all">Todo</button></div>`:''}</div>`
    :`<div class="per-nav"><button type="button" class="per-b" data-act="perMov" data-d="-1" aria-label="Anterior">‹</button><span class="per-l">${IC_CAL}${esc(perLabel())}</span><button type="button" class="per-b" data-act="perMov" data-d="1" aria-label="Siguiente" ${nextOff?'disabled':''}>›</button></div>`}</div>`}
 function perAplicar(){perGuardar();try{for(const k in CH_CACHE)delete CH_CACHE[k]}catch(e){}
   const r=perRango(),ms=perMeses();ui.lib.desde=r.d;ui.lib.hasta=r.h;ui.anPer='custom';ui.anDesde=ms[0];ui.anHasta=ms[ms.length-1];ui.anMes='';ui._rgOpen=undefined;
   if(ui.lim){ui.lim.libI=ui.lim.libG=50}animar='soft';render()}
 Object.assign(A,{
-  perModo:d=>{if(ui.per.m===d.v)return;if(d.v==='rango'){const r=perRango();ui.per.d=r.d;ui.per.h=r.h>hoy()?hoy():r.h}ui.per.m=d.v;perAplicar()},
+  perModo:d=>{if(ui.per.m===d.v)return;ui._perPop=d.v==='rango'&&!esMovil();if(d.v==='rango'){const r=perRango();ui.per.d=r.d;ui.per.h=r.h>hoy()?hoy():r.h}ui.per.m=d.v;perAplicar()},
   perMov:d=>{const n=Number(d.d),p=ui.per;p.ref=mesSum(p.ref||hoy().slice(0,7),p.m==='tri'?3*n:p.m==='anio'?12*n:n);if(p.ref>hoy().slice(0,7))p.ref=hoy().slice(0,7);perAplicar()},
-  perPre:d=>{const h=hoy();let ini;if(d.v==='all'){ini=[...state.ventas.map(v=>v.fecha),...state.pagos.map(p=>p.fecha)].filter(Boolean).sort()[0]||h}else ini=mesSum(h.slice(0,7),-(Number(d.v)-1))+'-01';ui.per.d=String(ini).slice(0,10);ui.per.h=h;perAplicar()}});
+  perPop:()=>{ui._perPop=!ui._perPop;render()},
+  perPre:d=>{ui._perPop=false;const h=hoy();let ini;if(d.v==='all'){ini=[...state.ventas.map(v=>v.fecha),...state.pagos.map(p=>p.fecha)].filter(Boolean).sort()[0]||h}else ini=mesSum(h.slice(0,7),-(Number(d.v)-1))+'-01';ui.per.d=String(ini).slice(0,10);ui.per.h=h;perAplicar()}});
 document.addEventListener('change',e=>{const t=e.target.closest('[data-per]');if(!t)return;ui.per[t.dataset.per]=t.value;perAplicar()});
 /* al arrancar, Analítica y el Libro toman el período guardado */
 {const r=perRango(),ms=perMeses();ui.lib.desde=r.d;ui.lib.hasta=r.h;ui.anPer='custom';ui.anDesde=ms[0];ui.anHasta=ms[ms.length-1]}
@@ -7370,6 +7378,9 @@ document.addEventListener('change',e=>{const t=e.target.closest('[data-per]');if
   document.addEventListener('click',e=>{if(largo&&e.target.closest('#abar')){e.stopPropagation();e.preventDefault();largo=false}},true);
   document.addEventListener('contextmenu',e=>{if(e.target.closest('#abar'))e.preventDefault()});
 })();
+
+document.addEventListener('mousedown',e=>{if(!ui._perPop||e.target.closest('.per-pop,.per-lb,.dp-pop,.dp-sheet,[class*="dp-"]'))return;ui._perPop=false;const p=document.querySelector('.per-pop');if(p){p.remove();const b=document.querySelector('.per-lb');if(b){b.classList.remove('on');b.setAttribute('aria-expanded','false')}}},true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui._perPop){ui._perPop=false;const p=document.querySelector('.per-pop');if(p)p.remove()}});
 /* ================= Arranque ================= */
 $('#btnMenu').onclick=()=>$('#sidebar').classList.toggle('open');
 $('#btnSearch').onclick=()=>A.buscar();
